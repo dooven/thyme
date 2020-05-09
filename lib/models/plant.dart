@@ -1,3 +1,4 @@
+import 'package:boopplant/convert.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'plant.g.dart';
@@ -10,7 +11,7 @@ class Plant {
   @JsonKey(name: "image_url")
   String imageUrl;
 
-  @JsonKey(name: "created_at")
+  @JsonKey(name: "created_at", toJson: dateTimeToMilli, fromJson: milliToDateTime)
   DateTime createdAt;
 
   Plant({ this.id, this.name, this.imageUrl, this.createdAt });

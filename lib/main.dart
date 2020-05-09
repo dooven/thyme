@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         routes: {
-          '/': (_) => Schedule(),
+          '/': (_) => Plants(),
         },
       ),
     );
