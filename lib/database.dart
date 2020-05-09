@@ -5,7 +5,8 @@ class LocalDatabase {
   Database db;
   String path;
 
-  final databaseName = 'database.sqlite';
+  static final databaseName = 'database.sqlite';
+  static final plantTableName = 'plant';
 
   Future setupDb() async {
     var databasesPath = await getDatabasesPath();
