@@ -8,10 +8,12 @@ class LocalDatabase {
   static final databaseName = 'database.sqlite';
   static final plantTableName = 'plant';
 
-  Future setupDb() async {
+  Future<Database> setupDb() async {
     var databasesPath = await getDatabasesPath();
     path = join(databasesPath, databaseName);
     await openCloseV1();
+
+    return await openDatabase(path, version: 1, onConfigure: onConfigure);
   }
 
   Future onConfigure(Database db) async {
@@ -42,6 +44,15 @@ class LocalDatabase {
   FOREIGN KEY(plant_id) REFERENCES plant(id),
   FOREIGN KEY(schedule_rule_id) REFERENCES schedule_rule(id)
   );''');
+
+      // INSERT TEST DATA
+      batch.execute('''
+ insert into plant (name, created_at)
+values ('My Plant 1', CURRENT_TIMESTAMP);     
+      
+insert into plant (name, created_at)
+values ('My Plant 2', CURRENT_TIMESTAMP);
+      ''');
     }
 
     db = await openDatabase(

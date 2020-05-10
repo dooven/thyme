@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 class PlantRepository {
   final Database database;
 
-  PlantRepository({ this.database });
+  PlantRepository({this.database});
 
   Future<Plant> insert(Plant plant) async {
     plant.id = await database.insert(
@@ -17,8 +17,14 @@ class PlantRepository {
   }
 
   Future<List<Plant>> list() async {
-    final result = await database.query(LocalDatabase.plantTableName);
+    try {
+      final result =
+      await database.query(
+          LocalDatabase.plantTableName, columns: null, where: null);
 
-    return result.map((e) => Plant.fromJson(e));
+      return result.map((e) => Plant.fromJson(e)).toList();
+    } catch (e) {
+      rethrow;
+    }
   }
 }

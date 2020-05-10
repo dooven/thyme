@@ -1,7 +1,9 @@
 import 'package:boopplant/database.dart';
 import 'package:boopplant/screens/screens.dart';
+import 'package:boopplant/screens/startupcontroller.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,9 +14,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        FutureProvider(
+        FutureProvider<Database>(
           create: (_) => LocalDatabase().setupDb(),
-          lazy: false,
         )
       ],
       child: MaterialApp(
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         routes: {
-          '/': (_) => Plants(),
+          '/': (_) => StartupController(),
         },
       ),
     );
