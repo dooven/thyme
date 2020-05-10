@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
+import 'package:boopplant/widgets/plant_image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -36,23 +35,15 @@ class _PlantInfoState extends State<PlantInfo> {
   }
 
   Widget plantName(Plant plant) {
-    return Text(plant.name);
-  }
-
-  Widget plantUrl(Plant plant) {
-    return Container(
-      width: 200,
-      height: 200,
-      child: Image.file(File(plant.imageUrl)),
+    return Text(
+      plant.name,
+      style: Theme.of(context).textTheme.headline5,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Info"),
-      ),
       body: StreamBuilder<Plant>(
         stream: _plantInfoBloc.plantStream,
         builder: (context, snapshot) {
@@ -66,7 +57,14 @@ class _PlantInfoState extends State<PlantInfo> {
             margin: EdgeInsets.all(16.0),
             child: ListView(
               children: [
-                if(snapshot.data.imageUrl != null) plantUrl(snapshot.data),
+                SizedBox(height: 16),
+                PlantImagePicker(
+                  imageUrl: snapshot.data.imageUrl,
+                  onImageChangeCallback: (newImageUrl) {},
+                ),
+                SizedBox(
+                  height: 16,
+                ),
                 plantName(snapshot.data),
               ],
             ),

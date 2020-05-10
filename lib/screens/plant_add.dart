@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/screens.dart';
+import 'package:boopplant/widgets/plant_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -43,7 +43,7 @@ class _PlantAddState extends State<PlantAdd> {
               nameField(),
               SizedBox(height: 24),
               imagePreview(),
-              takePicture(),
+              SizedBox(height: 24),
               submitButton(),
             ],
           ),
@@ -67,15 +67,9 @@ class _PlantAddState extends State<PlantAdd> {
     return StreamBuilder<String>(
       stream: _plantAddBloc.imageUrl,
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Container();
-        }
-
-        return Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: 250),
-            child: Image.file(File(snapshot.data)),
-          ),
+        return PlantImagePicker(
+          imageUrl: snapshot.data,
+          onImageChangeCallback: _plantAddBloc.changeImageURl,
         );
       },
     );
