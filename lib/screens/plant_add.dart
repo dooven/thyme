@@ -36,6 +36,9 @@ class _PlantAddState extends State<PlantAdd> {
         return true;
       },
       child: Scaffold(
+        appBar: AppBar(
+          title: Text('Add a plant'),
+        ),
         body: Container(
           margin: EdgeInsets.all(20.0),
           child: ListView(
