@@ -6,7 +6,6 @@ import 'package:boopplant/screens/screens.dart';
 import 'package:boopplant/widgets/plant_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sqflite/sqflite.dart';
@@ -43,27 +42,16 @@ class _PlantAddState extends State<PlantAdd> {
           margin: EdgeInsets.all(20.0),
           child: ListView(
             children: [
-              SizedBox(height: 24),
+              SizedBox(height: 8),
               nameField(),
-              SizedBox(height: 24),
+              SizedBox(height: 16),
               imagePreview(),
-              SizedBox(height: 24),
+              SizedBox(height: 16),
               submitButton(),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget takePicture() {
-    return RaisedButton(
-      child: Text("Take picture"),
-      onPressed: () async {
-        final imageUrl =
-            await ImagePicker.pickImage(source: ImageSource.camera);
-        _plantAddBloc.changeImageURl(imageUrl.path);
-      },
     );
   }
 

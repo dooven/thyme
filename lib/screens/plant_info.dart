@@ -1,6 +1,7 @@
+import 'dart:io';
+
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
-import 'package:boopplant/widgets/plant_image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -53,21 +54,41 @@ class _PlantInfoState extends State<PlantInfo> {
             );
           }
 
-          return Container(
-            margin: EdgeInsets.all(16.0),
-            child: ListView(
-              children: [
-                SizedBox(height: 16),
-                PlantImagePicker(
-                  imageUrl: snapshot.data.imageUrl,
-                  onImageChangeCallback: (newImageUrl) {},
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                floating: true,
+                expandedHeight: 300.0,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (snapshot.data.imageUrl != null)
+                        Image.file(
+                          File(snapshot.data.imageUrl),
+                          fit: BoxFit.cover,
+                        ),
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment(0.0, 0.5),
+                            end: Alignment(0.0, 0.0),
+                            colors: <Color>[
+                              Color(0x50000000),
+                              Color(0x00000000),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  title: Text(
+                    snapshot.data.name,
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-                SizedBox(
-                  height: 16,
-                ),
-                plantName(snapshot.data),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),
