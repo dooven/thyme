@@ -16,11 +16,22 @@ class PlantRepository {
     return plant;
   }
 
+  Future<Plant> getById(int id) {
+    return database.query(LocalDatabase.plantTableName, where: 'id = $id').then(
+      (value) {
+        if (value.isEmpty) {
+          return null;
+        }
+
+        return Plant.fromJson(value.first);
+      },
+    );
+  }
+
   Future<List<Plant>> list() async {
     try {
-      final result =
-      await database.query(
-          LocalDatabase.plantTableName, columns: null, where: null);
+      final result = await database.query(LocalDatabase.plantTableName,
+          columns: null, where: null);
 
       return result.map((e) => Plant.fromJson(e)).toList();
     } catch (e) {

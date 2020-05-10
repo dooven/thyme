@@ -1,5 +1,6 @@
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
+import 'package:boopplant/screens/plant_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -7,8 +8,16 @@ import 'package:sqflite/sqflite.dart';
 
 class PlantList extends StatelessWidget {
   buildListItem(Plant plant) {
-    return ListTile(
-      title: Text(plant.name),
+    return Builder(
+      builder: (context) {
+        return ListTile(
+          title: Text(plant.name),
+          onTap: () {
+            Navigator.of(context).pushNamed('/plant/info',
+                arguments: PlantInfoScreenArguments(id: plant.id));
+          },
+        );
+      },
     );
   }
 

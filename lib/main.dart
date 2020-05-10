@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/': (_) => StartupController(),
           '/plant/add': (_) => PlantAdd(),
+          '/plant/info': (_) => PlantInfo(),
         },
       ),
     );
