@@ -31,8 +31,11 @@ class PlantList extends StatelessWidget {
         children: [
           RaisedButton(
             child: Text("Add plant"),
-            onPressed: () {
-              Navigator.of(context).pushNamed('/plant/add');
+            onPressed: () async {
+              final res = await Navigator.of(context).pushNamed('/plant/add');
+              if(res == null) {
+
+              }
             },
           ),
           Expanded(

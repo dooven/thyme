@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
+import 'package:boopplant/screens/screens.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,14 +28,20 @@ class _PlantAddState extends State<PlantAdd> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        margin: EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            nameField(),
-            submitButton(),
-          ],
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, false);
+        return true;
+      },
+      child: Scaffold(
+        body: Container(
+          margin: EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              nameField(),
+              submitButton(),
+            ],
+          ),
         ),
       ),
     );
@@ -70,8 +77,11 @@ class _PlantAddState extends State<PlantAdd> {
           ),
           color: Theme.of(context).primaryColor,
           onPressed: snapshot.hasData
-              ? () async {
-                  await _plantAddBloc.insert();
+              ? () {
+                  _plantAddBloc.insert().then((plant) {
+                    Navigator.of(context).pushReplacementNamed('/plant/info',
+                        arguments: PlantInfoScreenArguments(id: plant.id));
+                  });
                 }
               : null,
         );
@@ -103,7 +113,7 @@ class PlantAddBloc {
 
   PlantAddBloc({this.plantRepository});
 
-  Future<void> insert() {
+  Future<Plant> insert() {
     _submitLoadingController.add(true);
     return this
         .plantRepository
@@ -111,7 +121,7 @@ class PlantAddBloc {
           name: _plantNameController.value,
           createdAt: DateTime.now(),
         ))
-        .then((value) => _submitLoadingController.add(false));
+        .whenComplete(() => _submitLoadingController.add(false));
   }
 
   final validateName = StreamTransformer<String, String>.fromHandlers(
