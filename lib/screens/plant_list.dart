@@ -26,9 +26,20 @@ class _PlantListState extends State<PlantList> {
   }
 
   buildListItem(Plant plant) {
+    final hasImageURL = plant.imageUrl != null;
     return Builder(
       builder: (context) {
         return ListTile(
+          leading: CircleAvatar(
+            child: !hasImageURL
+                ? Text(
+                    plant.name.substring(0, 1),
+                    style: TextStyle(color: Colors.white),
+                  )
+                : null,
+            backgroundColor: Theme.of(context).primaryColor,
+            backgroundImage: hasImageURL ? AssetImage(plant.imageUrl) : null,
+          ),
           title: Text(plant.name),
           onTap: () {
             Navigator.of(context).pushNamed('/plant/info',
