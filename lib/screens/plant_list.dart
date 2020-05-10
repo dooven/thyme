@@ -1,12 +1,30 @@
+import 'dart:async';
+
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/plant_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:sqflite/sqflite.dart';
 
-class PlantList extends StatelessWidget {
+class PlantList extends StatefulWidget {
+  @override
+  _PlantListState createState() => _PlantListState();
+}
+
+class _PlantListState extends State<PlantList> {
+  PlantListBloc _plantListBloc;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _plantListBloc = PlantListBloc(
+        PlantRepository(database: Provider.of<Database>(context)));
+    _plantListBloc.plantListFetchSink(true);
+  }
+
   buildListItem(Plant plant) {
     return Builder(
       builder: (context) {
@@ -23,9 +41,6 @@ class PlantList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final plantRepository =
-        PlantRepository(database: Provider.of<Database>(context));
-
     return Scaffold(
       body: Column(
         children: [
@@ -33,17 +48,19 @@ class PlantList extends StatelessWidget {
             child: Text("Add plant"),
             onPressed: () async {
               final res = await Navigator.of(context).pushNamed('/plant/add');
-              if(res == null) {
-
+              if (res == null) {
+                _plantListBloc.plantListFetchSink(true);
               }
             },
           ),
           Expanded(
-            child: FutureBuilder<List<Plant>>(
-              future: plantRepository.list(),
+            child: StreamBuilder<List<Plant>>(
+              stream: _plantListBloc.plantList,
               builder: (context, snapshot) {
-                if (snapshot.data == null) {
-                  return CircularProgressIndicator();
+                print(snapshot.data);
+                if (snapshot.connectionState == ConnectionState.waiting ||
+                    !snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
                 }
 
                 return ListView.builder(
@@ -58,5 +75,34 @@ class PlantList extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class PlantListBloc {
+  final _plantListFetchController = BehaviorSubject<bool>();
+  final PlantRepository _plantRepository;
+
+  Stream<bool> get plantListFetchStream => _plantListFetchController.stream;
+
+  Function(bool) get plantListFetchSink => _plantListFetchController.sink.add;
+
+  Stream<List<Plant>> get plantList => plantListFetchStream.transform(
+        StreamTransformer<bool, List<Plant>>.fromHandlers(
+          handleData: (data, sink) async {
+            sink.add(null);
+            try {
+              final result = await this._plantRepository.list();
+              sink.add(result);
+            } catch (e) {
+              sink.addError(e);
+            }
+          },
+        ),
+      );
+
+  PlantListBloc(this._plantRepository);
+
+  void dispose() {
+    _plantListFetchController.close();
   }
 }
