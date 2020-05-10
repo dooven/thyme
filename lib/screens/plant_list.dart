@@ -55,15 +55,6 @@ class _PlantListState extends State<PlantList> {
     return Scaffold(
       body: Column(
         children: [
-          RaisedButton(
-            child: Text("Add plant"),
-            onPressed: () async {
-              final res = await Navigator.of(context).pushNamed('/plant/add');
-              if (res == null) {
-                _plantListBloc.plantListFetchSink(true);
-              }
-            },
-          ),
           Expanded(
             child: StreamBuilder<List<Plant>>(
               stream: _plantListBloc.plantList,
@@ -83,6 +74,30 @@ class _PlantListState extends State<PlantList> {
             ),
           )
         ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final res = await Navigator.of(context).pushNamed('/plant/add');
+          if (res == null) {
+            _plantListBloc.plantListFetchSink(true);
+          }
+        },
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+        elevation: 2.0,
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                height: 50,
+              )
+            ]),
+        shape: CircularNotchedRectangle(),
+        color: Colors.blueGrey,
       ),
     );
   }
