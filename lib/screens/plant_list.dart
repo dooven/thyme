@@ -58,8 +58,7 @@ class _PlantListState extends State<PlantList> {
               stream: _plantListBloc.plantList,
               builder: (context, snapshot) {
                 print(snapshot.data);
-                if (snapshot.connectionState == ConnectionState.waiting ||
-                    !snapshot.hasData) {
+                if (!snapshot.hasData) {
                   return Center(child: CircularProgressIndicator());
                 }
 

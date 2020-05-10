@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/screens.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sqflite/sqflite.dart';
@@ -39,11 +41,48 @@ class _PlantAddState extends State<PlantAdd> {
           child: Column(
             children: [
               nameField(),
+              SizedBox(height: 24),
+              imagePreview(),
+              takePicture(),
               submitButton(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget takePicture() {
+    return RaisedButton(
+      child: Text("Take picture"),
+      onPressed: () async {
+        final imageUrl =
+            await ImagePicker.pickImage(source: ImageSource.camera);
+        _plantAddBloc.changeImageURl(imageUrl.path);
+      },
+    );
+  }
+
+  Widget imagePreview() {
+    return StreamBuilder<String>(
+      stream: _plantAddBloc.imageUrl,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Container();
+        }
+
+        return Center(
+          child: Expanded(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 250),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.file(File(snapshot.data)),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -99,10 +138,13 @@ class _PlantAddState extends State<PlantAdd> {
 class PlantAddBloc {
   final PlantRepository plantRepository;
   final _plantNameController = BehaviorSubject<String>();
+  final _imageURLController = BehaviorSubject<String>();
   final _submitLoadingController = BehaviorSubject<bool>();
 
   Stream<String> get plantName =>
       _plantNameController.stream.transform(validateName);
+
+  Stream<String> get imageUrl => _imageURLController.stream;
 
   Stream<bool> get canSubmit => plantName.mapTo(true);
 
@@ -110,6 +152,8 @@ class PlantAddBloc {
       _submitLoadingController.stream.startWith(false);
 
   Function(String) get changePlantName => _plantNameController.sink.add;
+
+  Function(String) get changeImageURl => _imageURLController.sink.add;
 
   PlantAddBloc({this.plantRepository});
 
@@ -119,6 +163,7 @@ class PlantAddBloc {
         .plantRepository
         .insert(Plant(
           name: _plantNameController.value,
+          imageUrl: _imageURLController.value,
           createdAt: DateTime.now(),
         ))
         .whenComplete(() => _submitLoadingController.add(false));
@@ -136,5 +181,6 @@ class PlantAddBloc {
   void dispose() {
     _plantNameController.close();
     _submitLoadingController.close();
+    _imageURLController.close();
   }
 }

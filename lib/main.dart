@@ -1,6 +1,7 @@
 import 'package:boopplant/database.dart';
 import 'package:boopplant/screens/screens.dart';
 import 'package:boopplant/screens/startupcontroller.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -17,6 +18,11 @@ class MyApp extends StatelessWidget {
       providers: [
         FutureProvider<Database>(
           create: (_) => LocalDatabase().setupDb(),
+        ),
+        FutureProvider<CameraDescription>(
+          create: (_) => availableCameras()
+              .then((value) => value.isEmpty ? null : value.first),
+          lazy: false,
         )
       ],
       child: MaterialApp(

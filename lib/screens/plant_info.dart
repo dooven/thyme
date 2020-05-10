@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:flutter/material.dart';
@@ -33,9 +35,25 @@ class _PlantInfoState extends State<PlantInfo> {
     _plantInfoBloc.getPlantById(args.id);
   }
 
+  Widget plantName(Plant plant) {
+    return Text(plant.name);
+  }
+
+  Widget plantUrl(Plant plant) {
+    return Expanded(
+      child: Container(
+        width: 200,
+        child: Image.file(File(plant.imageUrl)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Info"),
+      ),
       body: StreamBuilder<Plant>(
         stream: _plantInfoBloc.plantStream,
         builder: (context, snapshot) {
@@ -46,7 +64,14 @@ class _PlantInfoState extends State<PlantInfo> {
           }
 
           return Center(
-            child: Text(snapshot.data.name),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                plantName(snapshot.data),
+                plantUrl(snapshot.data),
+              ],
+            ),
           );
         },
       ),
