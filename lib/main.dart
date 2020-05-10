@@ -34,8 +34,8 @@ class MyApp extends StatelessWidget {
             accentColor: Colors.blueGrey,
             visualDensity: VisualDensity.adaptivePlatformDensity,
             buttonTheme: ButtonThemeData(
-              buttonColor: Colors.blueGrey[100],
-              textTheme: ButtonTextTheme.normal,
+              buttonColor: Colors.blueGrey[500],
+              textTheme: ButtonTextTheme.primary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
             ),
