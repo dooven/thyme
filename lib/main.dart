@@ -1,9 +1,12 @@
 import 'package:boopplant/database.dart';
 import 'package:boopplant/screens/screens.dart';
+import 'package:boopplant/screens/startupcontroller.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -12,9 +15,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        FutureProvider(
+        FutureProvider<Database>(
           create: (_) => LocalDatabase().setupDb(),
-          lazy: false,
         )
       ],
       child: MaterialApp(
@@ -22,8 +24,15 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.lightGreen,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
+        builder: (context, child) {
+          return SafeArea(
+            child: child,
+          );
+        },
         routes: {
-          '/': (_) => Schedule(),
+          '/': (_) => StartupController(),
+          '/plant/add': (_) => PlantAdd(),
+          '/plant/info': (_) => PlantInfo(),
         },
       ),
     );
