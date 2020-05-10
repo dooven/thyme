@@ -23,8 +23,14 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.lightGreen,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
+        builder: (context, child) {
+          return SafeArea(
+            child: child,
+          );
+        },
         routes: {
           '/': (_) => StartupController(),
+          '/plant/add': (_) => PlantAdd(),
         },
       ),
     );

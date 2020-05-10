@@ -1,4 +1,4 @@
-import 'package:boopplant/screens/plants.dart';
+import 'package:boopplant/screens/plant_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +26,7 @@ class _StartupControllerState extends State<StartupController> {
       return CircularProgressIndicator();
     }
 
-    return Plants();
+    return PlantList();
   }
 }
 
