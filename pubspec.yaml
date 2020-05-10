@@ -27,6 +27,7 @@ dependencies:
   path:
   provider:
   build_runner:
+  rxdart:
   json_serializable:
 
   # The following adds the Cupertino Icons font to your application.
