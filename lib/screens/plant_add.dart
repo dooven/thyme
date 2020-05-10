@@ -40,6 +40,7 @@ class _PlantAddState extends State<PlantAdd> {
           margin: EdgeInsets.all(20.0),
           child: ListView(
             children: [
+              SizedBox(height: 24),
               nameField(),
               SizedBox(height: 24),
               imagePreview(),
@@ -92,26 +93,28 @@ class _PlantAddState extends State<PlantAdd> {
     return StreamBuilder(
       stream: _plantAddBloc.canSubmit,
       builder: (context, snapshot) {
-        return RaisedButton(
-          child: StreamBuilder(
-            stream: _plantAddBloc.submitLoading,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData || snapshot.data) {
-                return CircularProgressIndicator();
-              }
-
-              return Text("Submit");
-            },
-          ),
-          color: Theme.of(context).primaryColor,
-          onPressed: snapshot.hasData
-              ? () {
-                  _plantAddBloc.insert().then((plant) {
-                    Navigator.of(context).pushReplacementNamed('/plant/info',
-                        arguments: PlantInfoScreenArguments(id: plant.id));
-                  });
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: RaisedButton(
+            child: StreamBuilder(
+              stream: _plantAddBloc.submitLoading,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || snapshot.data) {
+                  return CircularProgressIndicator();
                 }
-              : null,
+
+                return Text("Submit");
+              },
+            ),
+            onPressed: snapshot.hasData
+                ? () {
+                    _plantAddBloc.insert().then((plant) {
+                      Navigator.of(context).pushReplacementNamed('/plant/info',
+                          arguments: PlantInfoScreenArguments(id: plant.id));
+                    });
+                  }
+                : null,
+          ),
         );
       },
     );

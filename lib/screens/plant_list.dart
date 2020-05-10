@@ -37,7 +37,7 @@ class _PlantListState extends State<PlantList> {
                     style: TextStyle(color: Colors.white),
                   )
                 : null,
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: Theme.of(context).backgroundColor,
             backgroundImage: hasImageURL ? AssetImage(plant.imageUrl) : null,
           ),
           title: Text(plant.name),
@@ -93,7 +93,7 @@ class _PlantListState extends State<PlantList> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [Container(height: 50)]),
         shape: CircularNotchedRectangle(),
-        color: Colors.blueGrey,
+        color: Theme.of(context).backgroundColor,
       ),
     );
   }

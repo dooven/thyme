@@ -22,7 +22,7 @@ class PlantImagePicker extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(16)),
-        color: hasImage ? null : Colors.grey,
+        color: hasImage ? null : Theme.of(context).backgroundColor,
         image: hasImage
             ? DecorationImage(
                 image: AssetImage(imageUrl),
