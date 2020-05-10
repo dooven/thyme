@@ -40,11 +40,10 @@ class _PlantInfoState extends State<PlantInfo> {
   }
 
   Widget plantUrl(Plant plant) {
-    return Expanded(
-      child: Container(
-        width: 200,
-        child: Image.file(File(plant.imageUrl)),
-      ),
+    return Container(
+      width: 200,
+      height: 200,
+      child: Image.file(File(plant.imageUrl)),
     );
   }
 
@@ -63,13 +62,12 @@ class _PlantInfoState extends State<PlantInfo> {
             );
           }
 
-          return Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
+          return Container(
+            margin: EdgeInsets.all(16.0),
+            child: ListView(
               children: [
+                if(snapshot.data.imageUrl != null) plantUrl(snapshot.data),
                 plantName(snapshot.data),
-                plantUrl(snapshot.data),
               ],
             ),
           );

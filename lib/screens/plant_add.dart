@@ -38,7 +38,7 @@ class _PlantAddState extends State<PlantAdd> {
       child: Scaffold(
         body: Container(
           margin: EdgeInsets.all(20.0),
-          child: Column(
+          child: ListView(
             children: [
               nameField(),
               SizedBox(height: 24),
@@ -72,14 +72,9 @@ class _PlantAddState extends State<PlantAdd> {
         }
 
         return Center(
-          child: Expanded(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 250),
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.file(File(snapshot.data)),
-              ),
-            ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: 250),
+            child: Image.file(File(snapshot.data)),
           ),
         );
       },
