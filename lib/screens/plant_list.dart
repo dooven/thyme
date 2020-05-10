@@ -91,11 +91,7 @@ class _PlantListState extends State<PlantList> {
         child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                height: 50,
-              )
-            ]),
+            children: [Container(height: 50)]),
         shape: CircularNotchedRectangle(),
         color: Colors.blueGrey,
       ),
