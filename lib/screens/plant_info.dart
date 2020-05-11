@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:sliver_fab/sliver_fab.dart';
 import 'package:sqflite/sqflite.dart';
 
 class PlantInfoScreenArguments {
@@ -54,11 +55,20 @@ class _PlantInfoState extends State<PlantInfo> {
             );
           }
 
-          return CustomScrollView(
+          return SliverFab(
+            floatingWidget: FloatingActionButton(
+              onPressed: () {},
+              child: Icon(Icons.edit),
+            ),
+            expandedHeight: 300.0,
             slivers: [
               SliverAppBar(
+                iconTheme: IconThemeData(
+                  color: Colors.white,
+                ),
                 floating: true,
                 expandedHeight: 300.0,
+                actions: [],
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     fit: StackFit.expand,
@@ -71,7 +81,7 @@ class _PlantInfoState extends State<PlantInfo> {
                       const DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            begin: Alignment(0.0, 0.5),
+                            begin: Alignment(0.0, 1),
                             end: Alignment(0.0, 0.0),
                             colors: <Color>[
                               Color(0x50000000),
