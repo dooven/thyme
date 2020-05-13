@@ -27,14 +27,12 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         theme: ThemeData(
-            appBarTheme: AppBarTheme(
-              color: Colors.lightGreen[200],
-            ),
+            primaryColor: Colors.lightGreen[300],
             primarySwatch: Colors.lightGreen,
-            accentColor: Colors.blueGrey,
+            accentColor: Colors.orangeAccent[200],
             visualDensity: VisualDensity.adaptivePlatformDensity,
             buttonTheme: ButtonThemeData(
-              buttonColor: Colors.blueGrey[500],
+              buttonColor: Colors.orangeAccent[200],
               textTheme: ButtonTextTheme.primary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
