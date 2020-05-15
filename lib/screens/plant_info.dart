@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
+import 'package:boopplant/screens/plant_add.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -22,18 +23,20 @@ class PlantInfo extends StatefulWidget {
 
 class _PlantInfoState extends State<PlantInfo> {
   PlantInfoBloc _plantInfoBloc;
+  PlantInfoScreenArguments _screenArguments;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final PlantInfoScreenArguments args =
-        ModalRoute.of(context).settings.arguments;
+    _screenArguments = ModalRoute.of(context).settings.arguments;
+
     _plantInfoBloc = PlantInfoBloc(
-      PlantRepository(
+      plantId: _screenArguments.id,
+      repository: PlantRepository(
         database: Provider.of<Database>(context),
       ),
     );
-    _plantInfoBloc.getPlantById(args.id);
+    _plantInfoBloc.getPlantById();
   }
 
   Widget plantName(Plant plant) {
@@ -57,7 +60,11 @@ class _PlantInfoState extends State<PlantInfo> {
 
           return SliverFab(
             floatingWidget: FloatingActionButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pushNamed('/plant/add',
+                    arguments:
+                        PlantAddScreenArgument(plantId: snapshot.data.id));
+              },
               child: Icon(Icons.edit),
             ),
             expandedHeight: 300.0,
@@ -108,18 +115,19 @@ class _PlantInfoState extends State<PlantInfo> {
 
 class PlantInfoBloc {
   final PlantRepository repository;
+  final int plantId;
 
   final _plantController = BehaviorSubject<Plant>();
 
-  PlantInfoBloc(this.repository);
+  PlantInfoBloc({this.repository, this.plantId});
 
   Stream<Plant> get plantStream => _plantController.stream;
 
   Plant get plant => _plantController.value;
 
-  Future<void> getPlantById(int id) {
+  Future<void> getPlantById() {
     return repository
-        .getById(id)
+        .getById(plantId)
         .then(_plantController.add)
         .catchError((error) => _plantController.addError(
               "Failed to fetch plant. Please try again later",

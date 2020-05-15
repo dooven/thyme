@@ -10,6 +10,12 @@ import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sqflite/sqflite.dart';
 
+class PlantAddScreenArgument {
+  final int plantId;
+
+  PlantAddScreenArgument({this.plantId});
+}
+
 class PlantAdd extends StatefulWidget {
   @override
   _PlantAddState createState() => _PlantAddState();
@@ -17,13 +23,18 @@ class PlantAdd extends StatefulWidget {
 
 class _PlantAddState extends State<PlantAdd> {
   PlantAddBloc _plantAddBloc;
+  final _plantNameController = new TextEditingController();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    PlantAddScreenArgument screenArgument =
+        ModalRoute.of(context).settings.arguments;
     _plantAddBloc = PlantAddBloc(
-      plantRepository:
-          PlantRepository(database: Provider.of<Database>(context)),
+      plantId: screenArgument?.plantId,
+      plantRepository: PlantRepository(
+        database: Provider.of<Database>(context),
+      ),
     );
   }
 
@@ -39,7 +50,7 @@ class _PlantAddState extends State<PlantAdd> {
           title: Text('Add a plant'),
         ),
         body: Container(
-          margin: EdgeInsets.all(20.0),
+          margin: EdgeInsets.all(16.0),
           child: ListView(
             children: [
               SizedBox(height: 8),
@@ -71,10 +82,15 @@ class _PlantAddState extends State<PlantAdd> {
     return StreamBuilder(
       stream: _plantAddBloc.plantName,
       builder: (context, snapshot) {
-        return TextField(
+        _plantNameController.value =
+            _plantNameController.value.copyWith(text: snapshot.data);
+        return TextFormField(
+          controller: _plantNameController,
           onChanged: _plantAddBloc.changePlantName,
           decoration: InputDecoration(
-              errorText: snapshot.error, labelText: "Plant Name"),
+            errorText: snapshot.error,
+            labelText: "Plant Name",
+          ),
         );
       },
     );
@@ -99,9 +115,14 @@ class _PlantAddState extends State<PlantAdd> {
             ),
             onPressed: snapshot.hasData
                 ? () {
-                    _plantAddBloc.insert().then((plant) {
-                      Navigator.of(context).pushReplacementNamed('/plant/info',
-                          arguments: PlantInfoScreenArguments(id: plant.id));
+                    _plantAddBloc.save().then((id) {
+                      if (_plantAddBloc.isEditing) {
+                        Navigator.pop(context);
+                      } else {
+                        Navigator.of(context).pushReplacementNamed(
+                            '/plant/info',
+                            arguments: PlantInfoScreenArguments(id: id));
+                      }
                     });
                   }
                 : null,
@@ -113,6 +134,7 @@ class _PlantAddState extends State<PlantAdd> {
 
   @override
   void dispose() {
+    _plantNameController.dispose();
     _plantAddBloc.dispose();
     super.dispose();
   }
@@ -120,12 +142,15 @@ class _PlantAddState extends State<PlantAdd> {
 
 class PlantAddBloc {
   final PlantRepository plantRepository;
+  final int plantId;
   final _plantNameController = BehaviorSubject<String>();
   final _imageURLController = BehaviorSubject<String>();
   final _submitLoadingController = BehaviorSubject<bool>();
 
   Stream<String> get plantName =>
       _plantNameController.stream.transform(validateName);
+
+  bool get isEditing => plantId != null;
 
   Stream<String> get imageUrl => _imageURLController.stream;
 
@@ -138,18 +163,48 @@ class PlantAddBloc {
 
   Function(String) get changeImageURl => _imageURLController.sink.add;
 
-  PlantAddBloc({this.plantRepository});
+  PlantAddBloc({this.plantRepository, this.plantId}) {
+    if (plantId != null) {
+      this.plantRepository.getById(plantId).then(
+        (value) {
+          _plantNameController.add(value.name);
+          _imageURLController.add(value.imageUrl);
+        },
+      );
+    }
+  }
 
   Future<Plant> insert() {
-    _submitLoadingController.add(true);
-    return this
-        .plantRepository
-        .insert(Plant(
+    return this.plantRepository.insert(Plant(
           name: _plantNameController.value,
           imageUrl: _imageURLController.value,
           createdAt: DateTime.now(),
-        ))
-        .whenComplete(() => _submitLoadingController.add(false));
+        ));
+  }
+
+  Future<int> update() {
+    return this.plantRepository.update(
+          this.plantId,
+          name: _plantNameController.value,
+          imageUrl: _imageURLController.value,
+        );
+  }
+
+  Future<int> save() async {
+    int id = plantId;
+    _submitLoadingController.add(true);
+    try {
+      if (plantId == null) {
+        final res = await insert();
+        id = res.id;
+      } else {
+        await update();
+      }
+    } finally {
+      _submitLoadingController.add(false);
+    }
+
+    return id;
   }
 
   final validateName = StreamTransformer<String, String>.fromHandlers(

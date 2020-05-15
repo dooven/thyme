@@ -22,7 +22,7 @@ class _StartupControllerState extends State<StartupController> {
 
   @override
   Widget build(BuildContext context) {
-    if(!_startupControllerBloc.isReady) {
+    if (!_startupControllerBloc.isReady) {
       return CircularProgressIndicator();
     }
 

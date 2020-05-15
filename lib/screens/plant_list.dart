@@ -57,17 +57,17 @@ class _PlantListState extends State<PlantList> {
         children: [
           Expanded(
             child: StreamBuilder<List<Plant>>(
-              stream: _plantListBloc.plantList,
+              stream: _plantListBloc.plantListFetcher,
               builder: (context, snapshot) {
-                print(snapshot.data);
+                print(snapshot.connectionState);
                 if (!snapshot.hasData) {
                   return Center(child: CircularProgressIndicator());
                 }
 
                 return ListView.builder(
-                  itemCount: snapshot.data.length,
+                  itemCount: _plantListBloc.plantList.length,
                   itemBuilder: (context, index) {
-                    return buildListItem(snapshot.data[index]);
+                    return buildListItem(_plantListBloc.plantList[index]);
                   },
                 );
               },
@@ -101,29 +101,24 @@ class _PlantListState extends State<PlantList> {
 
 class PlantListBloc {
   final _plantListFetchController = BehaviorSubject<bool>();
+  final _plantListController = BehaviorSubject<List<Plant>>();
+
   final PlantRepository _plantRepository;
 
   Stream<bool> get plantListFetchStream => _plantListFetchController.stream;
 
   Function(bool) get plantListFetchSink => _plantListFetchController.sink.add;
 
-  Stream<List<Plant>> get plantList => plantListFetchStream.transform(
-        StreamTransformer<bool, List<Plant>>.fromHandlers(
-          handleData: (data, sink) async {
-            sink.add(null);
-            try {
-              final result = await this._plantRepository.list();
-              sink.add(result);
-            } catch (e) {
-              sink.addError(e);
-            }
-          },
-        ),
-      );
+  Stream<void> get plantListFetcher => plantListFetchStream
+      .asyncMap((event) => this._plantRepository.list())
+      .doOnData(_plantListController.add);
+
+  List<Plant> get plantList => _plantListController.value;
 
   PlantListBloc(this._plantRepository);
 
   void dispose() {
     _plantListFetchController.close();
+    _plantListController.close();
   }
 }
