@@ -100,14 +100,15 @@ class _PlantListState extends State<PlantList> {
 }
 
 class PlantListBloc {
-  final _plantListFetchController = BehaviorSubject<bool>();
+  final _allPlantsFetchController = BehaviorSubject<bool>();
+  final _singlePlantFetchController = BehaviorSubject<int>();
   final _plantListController = BehaviorSubject<List<Plant>>();
 
   final PlantRepository _plantRepository;
 
-  Stream<bool> get plantListFetchStream => _plantListFetchController.stream;
+  Stream<bool> get plantListFetchStream => _allPlantsFetchController.stream;
 
-  Function(bool) get plantListFetchSink => _plantListFetchController.sink.add;
+  Function(bool) get plantListFetchSink => _allPlantsFetchController.sink.add;
 
   Stream<void> get plantListFetcher => plantListFetchStream
       .asyncMap((event) => this._plantRepository.list())
@@ -118,7 +119,8 @@ class PlantListBloc {
   PlantListBloc(this._plantRepository);
 
   void dispose() {
-    _plantListFetchController.close();
+    _allPlantsFetchController.close();
     _plantListController.close();
+    _singlePlantFetchController.close();
   }
 }
