@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
+import 'package:boopplant/screens/home.dart';
 import 'package:boopplant/screens/screens.dart';
 import 'package:boopplant/widgets/plant_image_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,25 +11,25 @@ import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sqflite/sqflite.dart';
 
-class PlantAddScreenArgument {
+class PlantModifyScreenArgument {
   final int plantId;
 
-  PlantAddScreenArgument({this.plantId});
+  PlantModifyScreenArgument({this.plantId});
 }
 
-class PlantAdd extends StatefulWidget {
+class PlantModify extends StatefulWidget {
   @override
-  _PlantAddState createState() => _PlantAddState();
+  _PlantModifyState createState() => _PlantModifyState();
 }
 
-class _PlantAddState extends State<PlantAdd> {
+class _PlantModifyState extends State<PlantModify> {
   PlantAddBloc _plantAddBloc;
   final _plantNameController = new TextEditingController();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    PlantAddScreenArgument screenArgument =
+    PlantModifyScreenArgument screenArgument =
         ModalRoute.of(context).settings.arguments;
     _plantAddBloc = PlantAddBloc(
       plantId: screenArgument?.plantId,
@@ -47,6 +48,7 @@ class _PlantAddState extends State<PlantAdd> {
       },
       child: Scaffold(
         appBar: AppBar(
+          leading: CloseButton(),
           title: Text('Add a plant'),
         ),
         body: Container(
@@ -96,6 +98,17 @@ class _PlantAddState extends State<PlantAdd> {
     );
   }
 
+  Widget onSubmit() {
+    _plantAddBloc.save().then((id) {
+      if (_plantAddBloc.isEditing) {
+        Navigator.pop(context, true);
+      } else {
+        Navigator.of(context).pushReplacementNamed(TabNavigatorRoutes.plantInfo,
+            arguments: PlantInfoScreenArguments(id: id));
+      }
+    });
+  }
+
   Widget submitButton() {
     return StreamBuilder(
       stream: _plantAddBloc.canSubmit,
@@ -106,26 +119,20 @@ class _PlantAddState extends State<PlantAdd> {
             child: StreamBuilder(
               stream: _plantAddBloc.submitLoading,
               builder: (context, snapshot) {
-                if (!snapshot.hasData || snapshot.data) {
-                  return CircularProgressIndicator();
+                if (snapshot.data) {
+                  return SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      backgroundColor: Colors.white,
+                    ),
+                  );
                 }
 
                 return Text("Submit");
               },
             ),
-            onPressed: snapshot.hasData
-                ? () {
-                    _plantAddBloc.save().then((id) {
-                      if (_plantAddBloc.isEditing) {
-                        Navigator.pop(context);
-                      } else {
-                        Navigator.of(context).pushReplacementNamed(
-                            '/plant/info',
-                            arguments: PlantInfoScreenArguments(id: id));
-                      }
-                    });
-                  }
-                : null,
+            onPressed: snapshot.hasData ? onSubmit : null,
           ),
         );
       },
@@ -200,6 +207,7 @@ class PlantAddBloc {
       } else {
         await update();
       }
+      await Future.delayed(Duration(seconds: 2));
     } finally {
       _submitLoadingController.add(false);
     }

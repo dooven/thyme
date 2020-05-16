@@ -45,11 +45,7 @@ class MyApp extends StatelessWidget {
             child: child,
           );
         },
-        routes: {
-          '/': (_) => StartupController(),
-          '/plant/add': (_) => PlantAdd(),
-          '/plant/info': (_) => PlantInfo(),
-        },
+        home: StartupController(),
       ),
     );
   }

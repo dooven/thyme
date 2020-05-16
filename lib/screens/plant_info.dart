@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
+import 'package:boopplant/screens/home.dart';
 import 'package:boopplant/screens/plant_add.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -23,6 +24,7 @@ class PlantInfo extends StatefulWidget {
 
 class _PlantInfoState extends State<PlantInfo> {
   PlantInfoBloc _plantInfoBloc;
+  PlantListBloc _plantListBloc;
   PlantInfoScreenArguments _screenArguments;
 
   @override
@@ -30,6 +32,7 @@ class _PlantInfoState extends State<PlantInfo> {
     super.didChangeDependencies();
     _screenArguments = ModalRoute.of(context).settings.arguments;
 
+    _plantListBloc = Provider.of<PlantListBloc>(context);
     _plantInfoBloc = PlantInfoBloc(
       plantId: _screenArguments.id,
       repository: PlantRepository(
@@ -43,6 +46,51 @@ class _PlantInfoState extends State<PlantInfo> {
     return Text(
       plant.name,
       style: Theme.of(context).textTheme.headline5,
+    );
+  }
+
+  void addPlant(Plant plant) {
+    Navigator.of(context)
+        .pushNamed(
+      TabNavigatorRoutes.plantModify,
+      arguments: PlantModifyScreenArgument(plantId: plant.id),
+    )
+        .then((value) {
+      if (value) {
+        _plantListBloc.plantListFetchSink(true);
+        _plantInfoBloc.getPlantById();
+      }
+    });
+  }
+
+  Widget flexibleSpaceBar(Plant plant) {
+    return FlexibleSpaceBar(
+      background: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (plant.imageUrl != null)
+            Image.file(
+              File(plant.imageUrl),
+              fit: BoxFit.cover,
+            ),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment(0.0, 1),
+                end: Alignment(0.0, 0.0),
+                colors: <Color>[
+                  Color(0x50000000),
+                  Color(0x00000000),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      title: Text(
+        plant.name,
+        style: TextStyle(color: Colors.white),
+      ),
     );
   }
 
@@ -60,50 +108,16 @@ class _PlantInfoState extends State<PlantInfo> {
 
           return SliverFab(
             floatingWidget: FloatingActionButton(
-              onPressed: () {
-                Navigator.of(context).pushNamed('/plant/add',
-                    arguments:
-                        PlantAddScreenArgument(plantId: snapshot.data.id));
-              },
+              onPressed: () => addPlant(snapshot.data),
               child: Icon(Icons.edit),
             ),
             expandedHeight: 300.0,
             slivers: [
               SliverAppBar(
-                iconTheme: IconThemeData(
-                  color: Colors.white,
-                ),
+                iconTheme: IconThemeData(color: Colors.white),
                 floating: true,
                 expandedHeight: 300.0,
-                actions: [],
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      if (snapshot.data.imageUrl != null)
-                        Image.file(
-                          File(snapshot.data.imageUrl),
-                          fit: BoxFit.cover,
-                        ),
-                      const DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment(0.0, 1),
-                            end: Alignment(0.0, 0.0),
-                            colors: <Color>[
-                              Color(0x50000000),
-                              Color(0x00000000),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  title: Text(
-                    snapshot.data.name,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
+                flexibleSpace: flexibleSpaceBar(snapshot.data),
               ),
             ],
           );
