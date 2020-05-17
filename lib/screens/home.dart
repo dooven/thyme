@@ -1,7 +1,6 @@
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/screens.dart';
-import 'package:boopplant/widgets/route_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -40,15 +39,19 @@ class _TabNavigatorState extends State<TabNavigator> {
       create: (_) => PlantListBloc(
         PlantRepository(database: Provider.of<Database>(context)),
       ),
-      child: Navigator(
-          key: widget.navigatorKey,
-          initialRoute: TabNavigatorRoutes.plantList,
-          onGenerateRoute: (routeSettings) {
-            return SlideRightRoute(
-              widget: routeBuilders[routeSettings.name],
-              settings: routeSettings,
-            );
-          }),
+      child: WillPopScope(
+        onWillPop: () async =>
+            !await widget.navigatorKey.currentState.maybePop(),
+        child: Navigator(
+            initialRoute: '/',
+            key: widget.navigatorKey,
+            onGenerateRoute: (routeSettings) {
+              return MaterialPageRoute(
+                builder: (_) => routeBuilders[routeSettings.name],
+                settings: routeSettings,
+              );
+            }),
+      ),
     );
   }
 }

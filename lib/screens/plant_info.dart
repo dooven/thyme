@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/home.dart';
-import 'package:boopplant/screens/plant_add.dart';
+import 'package:boopplant/screens/plant_modify.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';

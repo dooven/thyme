@@ -1,5 +1,4 @@
 import 'package:boopplant/database.dart';
-import 'package:boopplant/screens/screens.dart';
 import 'package:boopplant/screens/startupcontroller.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -45,7 +44,10 @@ class MyApp extends StatelessWidget {
             child: child,
           );
         },
-        home: StartupController(),
+        initialRoute: '/',
+        routes: {
+          '/': (_) => StartupController(),
+        },
       ),
     );
   }
