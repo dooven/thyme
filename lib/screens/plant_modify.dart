@@ -24,6 +24,8 @@ class PlantModify extends StatefulWidget {
 
 class _PlantModifyState extends State<PlantModify> {
   PlantAddBloc _plantAddBloc;
+  PlantListBloc _plantListBloc;
+
   final _plantNameController = new TextEditingController();
 
   @override
@@ -37,6 +39,8 @@ class _PlantModifyState extends State<PlantModify> {
         database: Provider.of<Database>(context),
       ),
     );
+
+    _plantListBloc = Provider.of<PlantListBloc>(context);
   }
 
   @override
@@ -100,6 +104,12 @@ class _PlantModifyState extends State<PlantModify> {
 
   Widget onSubmit() {
     _plantAddBloc.save().then((id) {
+      /**
+       * [#5](https://github.com/dooven/boopplant/issues/5)
+       * This triggers a fetch of ALL plants. This might cause some perf issues sometime
+       * but can work for now
+       */
+      _plantListBloc.plantListFetchSink(true);
       if (_plantAddBloc.isEditing) {
         Navigator.pop(context, true);
       } else {
