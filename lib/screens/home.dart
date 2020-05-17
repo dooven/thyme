@@ -1,6 +1,7 @@
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/screens.dart';
+import 'package:boopplant/widgets/route_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -46,8 +47,8 @@ class _TabNavigatorState extends State<TabNavigator> {
             initialRoute: '/',
             key: widget.navigatorKey,
             onGenerateRoute: (routeSettings) {
-              return MaterialPageRoute(
-                builder: (_) => routeBuilders[routeSettings.name],
+              return SlideRightRoute(
+                widget: routeBuilders[routeSettings.name],
                 settings: routeSettings,
               );
             }),
