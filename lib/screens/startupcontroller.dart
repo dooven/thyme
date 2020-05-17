@@ -1,4 +1,4 @@
-import 'package:boopplant/screens/plant_list.dart';
+import 'package:boopplant/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +11,7 @@ class StartupController extends StatefulWidget {
 
 class _StartupControllerState extends State<StartupController> {
   StartupControllerBloc _startupControllerBloc;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void didChangeDependencies() {
@@ -22,11 +23,11 @@ class _StartupControllerState extends State<StartupController> {
 
   @override
   Widget build(BuildContext context) {
-    if(!_startupControllerBloc.isReady) {
+    if (!_startupControllerBloc.isReady) {
       return CircularProgressIndicator();
     }
 
-    return PlantList();
+    return TabNavigator(navigatorKey: navigatorKey);
   }
 }
 
