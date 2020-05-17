@@ -32,7 +32,6 @@ class _PlantInfoState extends State<PlantInfo> {
     super.didChangeDependencies();
     _screenArguments = ModalRoute.of(context).settings.arguments;
 
-    _plantListBloc = Provider.of<PlantListBloc>(context);
     _plantInfoBloc = PlantInfoBloc(
       plantId: _screenArguments.id,
       repository: PlantRepository(
@@ -49,15 +48,12 @@ class _PlantInfoState extends State<PlantInfo> {
     );
   }
 
-  void addPlant(Plant plant) {
+  void editPlant(Plant plant) {
     Navigator.of(context)
-        .pushNamed(
-      TabNavigatorRoutes.plantModify,
-      arguments: PlantModifyScreenArgument(plantId: plant.id),
-    )
+        .pushNamed(TabNavigatorRoutes.plantModify,
+            arguments: PlantModifyScreenArgument(plantId: plant.id))
         .then((value) {
       if (value) {
-        _plantListBloc.plantListFetchSink(true);
         _plantInfoBloc.getPlantById();
       }
     });
@@ -108,7 +104,7 @@ class _PlantInfoState extends State<PlantInfo> {
 
           return SliverFab(
             floatingWidget: FloatingActionButton(
-              onPressed: () => addPlant(snapshot.data),
+              onPressed: () => editPlant(snapshot.data),
               child: Icon(Icons.edit),
             ),
             expandedHeight: 300.0,
