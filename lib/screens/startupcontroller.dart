@@ -1,8 +1,9 @@
+import 'package:boopplant/blocs/bloc.dart';
 import 'package:boopplant/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:rxdart/rxdart.dart';
 
 class StartupController extends StatefulWidget {
   @override
@@ -17,24 +18,33 @@ class _StartupControllerState extends State<StartupController> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _startupControllerBloc =
-        StartupControllerBloc(Provider.of<Database>(context));
+    _startupControllerBloc = StartupControllerBloc(
+      context.read<DatabaseBloc>(),
+      context.read<NotificationBloc>(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_startupControllerBloc.isReady) {
-      return CircularProgressIndicator();
-    }
-
-    return TabNavigator(navigatorKey: navigatorKey);
+    return StreamBuilder<bool>(
+        stream: _startupControllerBloc.isReady,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return TabNavigator(navigatorKey: navigatorKey);
+        });
   }
 }
 
 class StartupControllerBloc {
-  final Database database;
+  final DatabaseBloc database;
+  final NotificationBloc notificationBloc;
 
-  get isReady => database != null;
+  Stream<bool> get isReady => CombineLatestStream(
+      [database.databaseStream, notificationBloc.isReadyStream], (_) => true);
 
-  StartupControllerBloc(this.database);
+  StartupControllerBloc(this.database, this.notificationBloc);
 }
