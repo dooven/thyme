@@ -104,12 +104,12 @@ class _PlantInfoState extends State<PlantInfo> {
     );
   }
 
-  Widget scheduleCard() {
-    return Card(
-      child: Container(
-        margin: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget modifySchedule() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               "8:00 am",
@@ -118,21 +118,25 @@ class _PlantInfoState extends State<PlantInfo> {
                   .headline4
                   .copyWith(color: Colors.black),
             ),
-            dayList(),
-            RaisedButton(
-              child: Text("hi"),
+            IconButton(
+              icon: Icon(Icons.access_time),
               onPressed: () async {
                 final selectedTime = await showTimePicker(
                     context: context, initialTime: TimeOfDay.now());
-
-                final dateTime = DateTime.fromMillisecondsSinceEpoch(0).add(Duration(
-                    hours: selectedTime.hour, minutes: selectedTime.minute));
-
-                print(dateTime);
               },
             )
           ],
         ),
+        dayList(),
+      ],
+    );
+  }
+
+  Widget scheduleCard() {
+    return Card(
+      child: Container(
+        margin: EdgeInsets.all(16.0),
+        child: modifySchedule(),
       ),
     );
   }

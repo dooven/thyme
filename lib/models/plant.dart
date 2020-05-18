@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:boopplant/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -17,12 +19,14 @@ class Plant {
   DateTime createdAt;
 
   @JsonKey(
-      name: "time_of_day", toJson: timeOfDayToMilli, fromJson: timeOfDayFromJSON)
+      name: "time_of_day",
+      toJson: timeOfDayToMilli,
+      fromJson: timeOfDayFromJSON)
   TimeOfDay timeOfDay;
 
   @JsonKey(
       name: "byweekday", toJson: byweekdayToJSON, fromJson: byweekdayFromJSON)
-  List<String> byweekday;
+  List<int> byweekday;
 
   Plant({this.id, this.name, this.imageUrl, this.createdAt, this.timeOfDay});
 
@@ -38,19 +42,20 @@ class Plant {
       createdAt: createdAt ?? this.createdAt,
     );
   }
-  
+
   static TimeOfDay timeOfDayFromJSON(int milli) {
-    if(milli == null) return null;
-    
+    if (milli == null) return null;
+
     return milliToTimeOfDay(milli);
   }
 
-  static String byweekdayToJSON(List<String> value) {
-    return value.join(",");
+  static String byweekdayToJSON(List<int> value) {
+    return jsonEncode(value);
   }
 
-  static List<String> byweekdayFromJSON(String value) {
+  static List<int> byweekdayFromJSON(String value) {
     if (value == null) return [];
-    return value.split(",");
+    final List<dynamic> test = jsonDecode(value);
+    return test.cast<int>();
   }
 }
