@@ -24,7 +24,6 @@ class PlantInfo extends StatefulWidget {
 
 class _PlantInfoState extends State<PlantInfo> {
   PlantInfoBloc _plantInfoBloc;
-  PlantListBloc _plantListBloc;
   PlantInfoScreenArguments _screenArguments;
 
   @override
@@ -34,9 +33,7 @@ class _PlantInfoState extends State<PlantInfo> {
 
     _plantInfoBloc = PlantInfoBloc(
       plantId: _screenArguments.id,
-      repository: PlantRepository(
-        database: Provider.of<Database>(context),
-      ),
+      repository: PlantRepository(database: context.read<Database>()),
     );
     _plantInfoBloc.getPlantById();
   }
@@ -90,6 +87,56 @@ class _PlantInfoState extends State<PlantInfo> {
     );
   }
 
+  Widget dayList() {
+    return Row(
+      children: ['S', 'M', 'T', 'W', 'T', 'F']
+          .map((day) => Container(
+                width: 30,
+                height: 30,
+                margin: EdgeInsets.only(right: 16.0, top: 8.0),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).primaryColor,
+                ),
+                child: Center(child: Text(day)),
+              ))
+          .toList(),
+    );
+  }
+
+  Widget scheduleCard() {
+    return Card(
+      child: Container(
+        margin: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "8:00 am",
+              style: Theme.of(context)
+                  .textTheme
+                  .headline4
+                  .copyWith(color: Colors.black),
+            ),
+            dayList(),
+            RaisedButton(
+              child: Text("hi"),
+              onPressed: () async {
+                final selectedTime = await showTimePicker(
+                    context: context, initialTime: TimeOfDay.now());
+
+                final dateTime = DateTime.fromMillisecondsSinceEpoch(0).add(Duration(
+                    hours: selectedTime.hour, minutes: selectedTime.minute));
+
+                print(dateTime);
+              },
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,6 +161,13 @@ class _PlantInfoState extends State<PlantInfo> {
                 floating: true,
                 expandedHeight: 300.0,
                 flexibleSpace: flexibleSpaceBar(snapshot.data),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.all(16.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                      [SizedBox(height: 20), scheduleCard()]),
+                ),
               ),
             ],
           );

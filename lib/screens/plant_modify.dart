@@ -129,7 +129,7 @@ class _PlantModifyState extends State<PlantModify> {
             child: StreamBuilder(
               stream: _plantAddBloc.submitLoading,
               builder: (context, snapshot) {
-                if (snapshot.data) {
+                if (snapshot.hasData && snapshot.data) {
                   return SizedBox(
                     height: 20,
                     width: 20,
@@ -201,10 +201,11 @@ class PlantAddBloc {
 
   Future<int> update() {
     return this.plantRepository.update(
-          this.plantId,
+        this.plantId,
+        Plant(
           name: _plantNameController.value,
           imageUrl: _imageURLController.value,
-        );
+        ));
   }
 
   Future<int> save() async {

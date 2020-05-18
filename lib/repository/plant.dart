@@ -16,14 +16,23 @@ class PlantRepository {
     return plant;
   }
 
-  Future<int> update(int id, {String name, String imageUrl}) {
+  Future<int> update(int id, Plant plant) {
+    final updateValues = plant.toJson();
+
     return database.update(
-        LocalDatabase.plantTableName, {'name': name, 'image_url': imageUrl},
-        where: 'id = $id');
+      LocalDatabase.plantTableName,
+      updateValues,
+      where: 'id = $id',
+    );
   }
 
   Future<Plant> getById(int id) {
-    return database.query(LocalDatabase.plantTableName, where: 'id = $id').then(
+    return database
+        .query(
+      LocalDatabase.plantTableName,
+      where: 'id = $id',
+    )
+        .then(
       (value) {
         if (value.isEmpty) {
           return null;

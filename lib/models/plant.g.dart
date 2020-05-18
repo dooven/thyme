@@ -11,15 +11,25 @@ Plant _$PlantFromJson(Map<String, dynamic> json) {
     id: json['id'] as int,
     name: json['name'] as String,
     imageUrl: json['image_url'] as String,
-    createdAt: json['created_at'] == null
-        ? null
-        : DateTime.parse(json['created_at'] as String),
-  );
+    createdAt: milliToDateTime(json['created_at'] as int),
+    timeOfDay: Plant.timeOfDayFromJSON(json['time_of_day'] as int),
+  )..byweekday = Plant.byweekdayFromJSON(json['byweekday'] as String);
 }
 
-Map<String, dynamic> _$PlantToJson(Plant instance) => <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-      'image_url': instance.imageUrl,
-      'created_at': instance.createdAt?.toIso8601String(),
-    };
+Map<String, dynamic> _$PlantToJson(Plant instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('id', instance.id);
+  writeNotNull('name', instance.name);
+  writeNotNull('image_url', instance.imageUrl);
+  writeNotNull('created_at', dateTimeToMilli(instance.createdAt));
+  writeNotNull('time_of_day', timeOfDayToMilli(instance.timeOfDay));
+  writeNotNull('byweekday', Plant.byweekdayToJSON(instance.byweekday));
+  return val;
+}
