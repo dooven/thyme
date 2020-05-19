@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:boopplant/blocs/bloc.dart';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/home.dart';
@@ -33,6 +34,7 @@ class _PlantModifyState extends State<PlantModify> {
     super.didChangeDependencies();
     PlantModifyScreenArgument screenArgument =
         ModalRoute.of(context).settings.arguments;
+
     _plantAddBloc = PlantAddBloc(
       plantId: screenArgument?.plantId,
       plantRepository: PlantRepository(
@@ -201,11 +203,10 @@ class PlantAddBloc {
 
   Future<int> update() {
     return this.plantRepository.update(
-        this.plantId,
-        Plant(
+          this.plantId,
           name: _plantNameController.value,
           imageUrl: _imageURLController.value,
-        ));
+        );
   }
 
   Future<int> save() async {
@@ -218,7 +219,6 @@ class PlantAddBloc {
       } else {
         await update();
       }
-      await Future.delayed(Duration(seconds: 2));
     } finally {
       _submitLoadingController.add(false);
     }

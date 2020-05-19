@@ -17,25 +17,50 @@ class PlantInfoScreenArguments {
   PlantInfoScreenArguments({this.id});
 }
 
+class PlantInfoScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final PlantInfoScreenArguments screenArguments =
+        ModalRoute.of(context).settings.arguments;
+    return PlantInfo(
+      plantId: screenArguments.id,
+    );
+  }
+}
+
 class PlantInfo extends StatefulWidget {
+  final plantId;
+
+  const PlantInfo({Key key, this.plantId}) : super(key: key);
+
   @override
   _PlantInfoState createState() => _PlantInfoState();
 }
 
 class _PlantInfoState extends State<PlantInfo> {
   PlantInfoBloc _plantInfoBloc;
-  PlantInfoScreenArguments _screenArguments;
+  Future plantUpdateFuture;
+
+  @override
+  void dispose() {
+    _plantInfoBloc.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _screenArguments = ModalRoute.of(context).settings.arguments;
 
-    _plantInfoBloc = PlantInfoBloc(
-      plantId: _screenArguments.id,
-      repository: PlantRepository(database: context.read<Database>()),
+    final initialBloc = PlantInfoBloc(
+      plantId: widget.plantId,
+      plantRepository:
+          PlantRepository(database: Provider.of<Database>(context)),
     );
-    _plantInfoBloc.getPlantById();
+
+    if (initialBloc != _plantInfoBloc) {
+      _plantInfoBloc = initialBloc;
+      _plantInfoBloc.getPlantById();
+    }
   }
 
   Widget plantName(Plant plant) {
@@ -104,39 +129,77 @@ class _PlantInfoState extends State<PlantInfo> {
     );
   }
 
-  Widget modifySchedule() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "8:00 am",
-              style: Theme.of(context)
-                  .textTheme
-                  .headline4
-                  .copyWith(color: Colors.black),
+  modifyScheduleTime() async {
+    final selectedTime =
+        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+
+    setState(() {
+      plantUpdateFuture = _plantInfoBloc.plantRepository
+          .update(
+            widget.plantId,
+            timeOfDay: selectedTime,
+          )
+          .then((_) => _plantInfoBloc.getPlantById());
+    });
+  }
+
+  Widget addSchedule() {
+    return FutureBuilder(
+      future: plantUpdateFuture,
+      builder: (context, snapshot) {
+        final isLoading = snapshot.connectionState == ConnectionState.waiting;
+        return InkWell(
+          onTap: isLoading ? null : modifyScheduleTime,
+          child: Container(
+            margin: EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Add a schedule"),
+                isLoading
+                    ? CircularProgressIndicator()
+                    : Icon(Icons.access_time),
+              ],
             ),
-            IconButton(
-              icon: Icon(Icons.access_time),
-              onPressed: () async {
-                final selectedTime = await showTimePicker(
-                    context: context, initialTime: TimeOfDay.now());
-              },
-            )
-          ],
-        ),
-        dayList(),
-      ],
+          ),
+        );
+      },
     );
   }
 
-  Widget scheduleCard() {
-    return Card(
-      child: Container(
-        margin: EdgeInsets.all(16.0),
-        child: modifySchedule(),
+  Widget modifySchedule() {
+    final timeOfDay = _plantInfoBloc.plant.timeOfDay;
+    return Container(
+      margin: EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                timeOfDay.format(context),
+                style: Theme.of(context)
+                    .textTheme
+                    .headline4
+                    .copyWith(color: Colors.black),
+              ),
+              IconButton(
+                icon: Icon(Icons.access_time),
+                onPressed: modifyScheduleTime,
+              )
+            ],
+          ),
+          dayList(),
+        ],
+      ),
+    );
+  }
+
+  Widget scheduleCard(Plant plant) {
+    return Builder(
+      builder: (_) => Card(
+        child: plant.timeOfDay == null ? addSchedule() : modifySchedule(),
       ),
     );
   }
@@ -147,7 +210,8 @@ class _PlantInfoState extends State<PlantInfo> {
       body: StreamBuilder<Plant>(
         stream: _plantInfoBloc.plantStream,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (!snapshot.hasData ||
+              snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(),
             );
@@ -169,8 +233,10 @@ class _PlantInfoState extends State<PlantInfo> {
               SliverPadding(
                 padding: EdgeInsets.all(16.0),
                 sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                      [SizedBox(height: 20), scheduleCard()]),
+                  delegate: SliverChildListDelegate([
+                    SizedBox(height: 20),
+                    scheduleCard(snapshot.data),
+                  ]),
                 ),
               ),
             ],
@@ -182,19 +248,19 @@ class _PlantInfoState extends State<PlantInfo> {
 }
 
 class PlantInfoBloc {
-  final PlantRepository repository;
+  final PlantRepository plantRepository;
   final int plantId;
 
   final _plantController = BehaviorSubject<Plant>();
 
-  PlantInfoBloc({this.repository, this.plantId});
+  PlantInfoBloc({this.plantRepository, this.plantId});
 
   Stream<Plant> get plantStream => _plantController.stream;
 
   Plant get plant => _plantController.value;
 
   Future<void> getPlantById() {
-    return repository
+    return plantRepository
         .getById(plantId)
         .then(_plantController.add)
         .catchError((error) => _plantController.addError(

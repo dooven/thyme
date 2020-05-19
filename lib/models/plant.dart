@@ -15,17 +15,24 @@ class Plant {
   String imageUrl;
 
   @JsonKey(
-      name: "created_at", toJson: dateTimeToMilli, fromJson: milliToDateTime)
+    name: "created_at",
+    toJson: dateTimeToMilli,
+    fromJson: milliToDateTime,
+  )
   DateTime createdAt;
 
   @JsonKey(
-      name: "time_of_day",
-      toJson: timeOfDayToMilli,
-      fromJson: timeOfDayFromJSON)
+    name: "time_of_day",
+    toJson: timeOfDayToJSON,
+    fromJson: timeOfDayFromJSON,
+  )
   TimeOfDay timeOfDay;
 
   @JsonKey(
-      name: "byweekday", toJson: byweekdayToJSON, fromJson: byweekdayFromJSON)
+    name: "byweekday",
+    toJson: byweekdayToJSON,
+    fromJson: byweekdayFromJSON,
+  )
   List<int> byweekday;
 
   Plant({this.id, this.name, this.imageUrl, this.createdAt, this.timeOfDay});
@@ -43,6 +50,12 @@ class Plant {
     );
   }
 
+  static int timeOfDayToJSON(TimeOfDay timeOfDay) {
+    if (timeOfDay == null) return null;
+
+    return timeOfDayToMilli(timeOfDay);
+  }
+
   static TimeOfDay timeOfDayFromJSON(int milli) {
     if (milli == null) return null;
 
@@ -50,6 +63,8 @@ class Plant {
   }
 
   static String byweekdayToJSON(List<int> value) {
+    if (value == null) return null;
+
     return jsonEncode(value);
   }
 

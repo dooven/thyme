@@ -1,3 +1,4 @@
+import 'package:boopplant/blocs/bloc.dart';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/screens.dart';
@@ -26,7 +27,7 @@ class _TabNavigatorState extends State<TabNavigator> {
   Map<String, Widget> _routeBuilders() {
     return {
       TabNavigatorRoutes.plantList: PlantList(),
-      TabNavigatorRoutes.plantInfo: PlantInfo(),
+      TabNavigatorRoutes.plantInfo: PlantInfoScreen(),
       TabNavigatorRoutes.plantModify: PlantModify(),
     };
   }
@@ -49,6 +50,7 @@ class _TabNavigatorState extends State<TabNavigator> {
               return MaterialPageRoute(
                 builder: (_) => routeBuilders[routeSettings.name],
                 settings: routeSettings,
+                maintainState: true
               );
             }),
       ),

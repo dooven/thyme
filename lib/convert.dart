@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 int timeOfDayToMilli(TimeOfDay timeOfDay) {
   return DateTime.fromMillisecondsSinceEpoch(0)
-      .add(Duration(hours: timeOfDay.hour, minutes: timeOfDay.minute))
+      .add(Duration(
+          hours: DateTime.now().timeZoneOffset.inHours + timeOfDay.hour,
+          minutes: timeOfDay.minute))
       .millisecondsSinceEpoch;
 }
 

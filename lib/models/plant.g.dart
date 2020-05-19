@@ -29,7 +29,7 @@ Map<String, dynamic> _$PlantToJson(Plant instance) {
   writeNotNull('name', instance.name);
   writeNotNull('image_url', instance.imageUrl);
   writeNotNull('created_at', dateTimeToMilli(instance.createdAt));
-  writeNotNull('time_of_day', timeOfDayToMilli(instance.timeOfDay));
+  writeNotNull('time_of_day', Plant.timeOfDayToJSON(instance.timeOfDay));
   writeNotNull('byweekday', Plant.byweekdayToJSON(instance.byweekday));
   return val;
 }
