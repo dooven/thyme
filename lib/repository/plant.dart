@@ -23,13 +23,13 @@ class PlantRepository {
     String name,
     String imageUrl,
     TimeOfDay timeOfDay,
-    List<int> byweekly,
+    List<int> byweekday,
   }) {
     final updateValues = {
       if (name != null) 'name': name,
       if (imageUrl != null) 'image_url': imageUrl,
       if (timeOfDay != null) 'time_of_day': timeOfDayToMilli(timeOfDay),
-      if (byweekly != null) 'byweekly': Plant.byweekdayToJSON(byweekly),
+      if (byweekday != null) 'byweekday': Plant.byweekdayToJSON(byweekday),
     };
 
     return database.update(

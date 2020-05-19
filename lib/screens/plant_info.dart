@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:boopplant/app_colors.dart';
+import 'package:boopplant/days.dart';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/home.dart';
@@ -114,19 +116,43 @@ class _PlantInfoState extends State<PlantInfo> {
 
   Widget dayList() {
     return Row(
-      children: ['S', 'M', 'T', 'W', 'T', 'F']
-          .map((day) => Container(
-                width: 30,
-                height: 30,
-                margin: EdgeInsets.only(right: 16.0, top: 8.0),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Theme.of(context).primaryColor,
+        children: List.generate(
+      7,
+      (index) {
+        final byweekday = _plantInfoBloc.plant.byweekday;
+        final isScheduledForCurrentDay = byweekday.contains(index);
+        var dayTextStyle = Theme.of(context).textTheme.bodyText1;
+
+        if (!isScheduledForCurrentDay) {
+          dayTextStyle = dayTextStyle.copyWith(color: AppColors.disabledText);
+        }
+
+        return Container(
+          margin: EdgeInsets.only(right: 8),
+          child: ClipOval(
+            child: Material(
+              color: isScheduledForCurrentDay
+                  ? Theme.of(context).primaryColor
+                  : AppColors.disabledBackground,
+              child: InkWell(
+                onTap: () => toggleDay(index),
+                splashColor: Colors.white,
+                child: Container(
+                  height: 35,
+                  width: 35,
+                  child: Center(
+                    child: Text(
+                      Days.dayNumberToLetter(index),
+                      style: dayTextStyle,
+                    ),
+                  ),
                 ),
-                child: Center(child: Text(day)),
-              ))
-          .toList(),
-    );
+              ),
+            ),
+          ),
+        );
+      },
+    ));
   }
 
   modifyScheduleTime() async {
@@ -135,10 +161,25 @@ class _PlantInfoState extends State<PlantInfo> {
 
     setState(() {
       plantUpdateFuture = _plantInfoBloc.plantRepository
-          .update(
-            widget.plantId,
-            timeOfDay: selectedTime,
-          )
+          .update(widget.plantId, timeOfDay: selectedTime)
+          .then((_) => _plantInfoBloc.getPlantById());
+    });
+  }
+
+  toggleDay(int day) {
+    final byweekday = _plantInfoBloc.plant.byweekday;
+    List<int> newByWeekDay = [];
+    if (byweekday.contains(day)) {
+      newByWeekDay = byweekday.where((element) => element != day).toList();
+    } else {
+      newByWeekDay
+        ..addAll(byweekday)
+        ..add(day);
+    }
+
+    setState(() {
+      plantUpdateFuture = _plantInfoBloc.plantRepository
+          .update(widget.plantId, byweekday: newByWeekDay)
           .then((_) => _plantInfoBloc.getPlantById());
     });
   }
