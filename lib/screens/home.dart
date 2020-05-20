@@ -2,6 +2,7 @@ import 'package:boopplant/blocs/bloc.dart';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/screens.dart';
+import 'package:boopplant/widgets/route_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,8 @@ class TabNavigator extends StatefulWidget {
 }
 
 class _TabNavigatorState extends State<TabNavigator> {
+  Map<String, Widget> routeBuilders;
+
   Map<String, Widget> _routeBuilders() {
     return {
       TabNavigatorRoutes.plantList: PlantList(),
@@ -33,24 +36,27 @@ class _TabNavigatorState extends State<TabNavigator> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    var routeBuilders = _routeBuilders();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeBuilders = _routeBuilders();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Provider<PlantListBloc>(
       create: (_) => PlantListBloc(
         PlantRepository(database: Provider.of<Database>(context)),
       ),
+      lazy: false,
       child: WillPopScope(
         onWillPop: () async =>
             !await widget.navigatorKey.currentState.maybePop(),
         child: Navigator(
-            initialRoute: '/',
             key: widget.navigatorKey,
             onGenerateRoute: (routeSettings) {
               return MaterialPageRoute(
                 builder: (_) => routeBuilders[routeSettings.name],
                 settings: routeSettings,
-                maintainState: true
               );
             }),
       ),

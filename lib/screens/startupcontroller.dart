@@ -26,16 +26,30 @@ class _StartupControllerState extends State<StartupController> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<bool>(
-        stream: _startupControllerBloc.isReady,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
+    return Scaffold(
+      body: StreamBuilder<bool>(
+          stream: _startupControllerBloc.isReady,
+          initialData: false,
+          builder: (context, snapshot) {
+            Widget renderer;
+            if (!snapshot.data) {
+              renderer = Center(
+                child: Container(
+                  height: 100,
+                  width: 100,
+                  child: Image(image: AssetImage('assets/images/app_icon.png')),
+                ),
+              );
+            } else {
+              renderer = TabNavigator(navigatorKey: navigatorKey);
+            }
+
+            return AnimatedSwitcher(
+              duration: Duration(seconds: 1),
+              child: renderer,
             );
-          }
-          return TabNavigator(navigatorKey: navigatorKey);
-        });
+          }),
+    );
   }
 }
 
@@ -44,7 +58,8 @@ class StartupControllerBloc {
   final NotificationBloc notificationBloc;
 
   Stream<bool> get isReady => CombineLatestStream(
-      [database.databaseStream, notificationBloc.isReadyStream], (_) => true);
+      [database.databaseStream, notificationBloc.isReadyStream],
+      (_) => true).delay(Duration(seconds: 1));
 
   StartupControllerBloc(this.database, this.notificationBloc);
 }

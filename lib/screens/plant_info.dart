@@ -128,7 +128,7 @@ class _PlantInfoState extends State<PlantInfo> {
         }
 
         return Container(
-          margin: EdgeInsets.only(right: 8),
+          margin: EdgeInsets.only(right: 8, top: 16),
           child: ClipOval(
             child: Material(
               color: isScheduledForCurrentDay
@@ -158,6 +158,8 @@ class _PlantInfoState extends State<PlantInfo> {
   modifyScheduleTime() async {
     final selectedTime =
         await showTimePicker(context: context, initialTime: TimeOfDay.now());
+
+    if (selectedTime == null) return;
 
     setState(() {
       plantUpdateFuture = _plantInfoBloc.plantRepository
@@ -226,6 +228,7 @@ class _PlantInfoState extends State<PlantInfo> {
                     .copyWith(color: Colors.black),
               ),
               IconButton(
+                color: Theme.of(context).accentColor,
                 icon: Icon(Icons.access_time),
                 onPressed: modifyScheduleTime,
               )
