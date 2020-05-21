@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:boopplant/blocs/bloc.dart';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/home.dart';
@@ -104,7 +103,7 @@ class _PlantModifyState extends State<PlantModify> {
     );
   }
 
-  Widget onSubmit() {
+  void onSubmit() {
     _plantAddBloc.save().then((id) {
       /**
        * [#5](https://github.com/dooven/boopplant/issues/5)

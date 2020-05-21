@@ -1,7 +1,5 @@
-import 'package:boopplant/convert.dart';
 import 'package:boopplant/database.dart';
 import 'package:boopplant/models/plant.dart';
-import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
 class PlantRepository {
@@ -22,14 +20,10 @@ class PlantRepository {
     int id, {
     String name,
     String imageUrl,
-    TimeOfDay timeOfDay,
-    List<int> byweekday,
   }) {
     final updateValues = {
       if (name != null) 'name': name,
       if (imageUrl != null) 'image_url': imageUrl,
-      if (timeOfDay != null) 'time_of_day': timeOfDayToMilli(timeOfDay),
-      if (byweekday != null) 'byweekday': Plant.byweekdayToJSON(byweekday),
     };
 
     return database.update(

@@ -41,15 +41,6 @@ class Plant {
 
   Map<String, dynamic> toJson() => _$PlantToJson(this);
 
-  Plant copyWith({int id, String name, String imageUrl, DateTime createdAt}) {
-    return Plant(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      imageUrl: imageUrl ?? this.imageUrl,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
-
   static int timeOfDayToJSON(TimeOfDay timeOfDay) {
     if (timeOfDay == null) return null;
 
