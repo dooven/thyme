@@ -9,6 +9,9 @@ part 'schedule.g.dart';
 @JsonSerializable(includeIfNull: false)
 class Schedule {
   int id;
+
+  @JsonKey(name: "plant_id")
+  int plantId;
   String name;
 
   @JsonKey(
@@ -25,12 +28,20 @@ class Schedule {
   )
   List<int> byweekday;
 
-  Schedule({
-    this.id,
-    this.name,
-    this.timeOfDay,
-    this.byweekday,
-  });
+  @JsonKey(
+    name: "created_at",
+    toJson: dateTimeToMilli,
+    fromJson: milliToDateTime,
+  )
+  DateTime createdAt;
+
+  Schedule(
+      {this.id,
+      this.name,
+      this.timeOfDay,
+      this.byweekday,
+      this.createdAt,
+      this.plantId});
 
   factory Schedule.fromJson(Map<String, dynamic> json) =>
       _$ScheduleFromJson(json);

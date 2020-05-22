@@ -7,6 +7,7 @@ import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
 import 'package:boopplant/screens/home.dart';
 import 'package:boopplant/screens/plant_modify.dart';
+import 'package:boopplant/widgets/schedule_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -117,47 +118,6 @@ class _PlantInfoState extends State<PlantInfo> {
     );
   }
 
-  Widget dayList() {
-    return Row(
-        children: List.generate(
-      7,
-      (index) {
-        final byweekday = _plantInfoBloc.plant.byweekday;
-        final isScheduledForCurrentDay = byweekday.contains(index);
-        var dayTextStyle = Theme.of(context).textTheme.bodyText1;
-
-        if (!isScheduledForCurrentDay) {
-          dayTextStyle = dayTextStyle.copyWith(color: AppColors.disabledText);
-        }
-
-        return Container(
-          margin: EdgeInsets.only(right: 8, top: 16),
-          child: ClipOval(
-            child: Material(
-              color: isScheduledForCurrentDay
-                  ? Theme.of(context).primaryColor
-                  : AppColors.disabledBackground,
-              child: InkWell(
-                onTap: () => toggleDay(index),
-                splashColor: Colors.white,
-                child: Container(
-                  height: 35,
-                  width: 35,
-                  child: Center(
-                    child: Text(
-                      Days.dayNumberToLetter(index),
-                      style: dayTextStyle,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    ));
-  }
-
   modifyScheduleTime() async {
     // final selectedTime =
     //     await showTimePicker(context: context, initialTime: TimeOfDay.now());
@@ -189,67 +149,80 @@ class _PlantInfoState extends State<PlantInfo> {
     // });
   }
 
-  Widget addSchedule() {
-    return FutureBuilder(
-      future: plantUpdateFuture,
-      builder: (context, snapshot) {
-        final isLoading = snapshot.connectionState == ConnectionState.waiting;
-        return InkWell(
-          onTap: isLoading ? null : modifyScheduleTime,
-          child: Container(
-            margin: EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Add a schedule"),
-                isLoading
-                    ? CircularProgressIndicator()
-                    : Icon(Icons.access_time),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  Widget buildAddSchedule() {
+    void add() {
+      setState(() {
+        plantUpdateFuture = _plantInfoBloc.scheduleRepository
+            .insert(Schedule(
+                byweekday: [],
+                name: 'New Schedule',
+                timeOfDay: TimeOfDay.now(),
+                createdAt: DateTime.now(),
+                plantId: widget.plantId))
+            .then((_) => _plantInfoBloc.getSchedulesByPlantId());
+      });
+    }
 
-  Widget modifySchedule() {
-    final timeOfDay = _plantInfoBloc.plant.timeOfDay;
-    return Container(
-      margin: EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                timeOfDay.format(context),
-                style: Theme.of(context)
-                    .textTheme
-                    .headline4
-                    .copyWith(color: Colors.black),
+    return Card(
+      child: FutureBuilder(
+        future: plantUpdateFuture,
+        builder: (context, snapshot) {
+          final isLoading = snapshot.connectionState == ConnectionState.waiting;
+          return InkWell(
+            onTap: isLoading ? null : add,
+            child: Container(
+              margin: EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Add a schedule"),
+                  isLoading
+                      ? CircularProgressIndicator()
+                      : Icon(Icons.access_time),
+                ],
               ),
-              IconButton(
-                color: Theme.of(context).accentColor,
-                icon: Icon(Icons.access_time),
-                onPressed: modifyScheduleTime,
-              )
-            ],
-          ),
-          dayList(),
-        ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget scheduleCard(Plant plant) {
-    return Builder(
-      builder: (_) => Card(
-        child: plant.timeOfDay == null ? addSchedule() : modifySchedule(),
-      ),
-    );
-  }
+  // Widget modifySchedule() {
+  //   final timeOfDay = _plantInfoBloc.plant.timeOfDay;
+  //   return Container(
+  //     margin: EdgeInsets.all(16.0),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             Text(
+  //               timeOfDay.format(context),
+  //               style: Theme.of(context)
+  //                   .textTheme
+  //                   .headline4
+  //                   .copyWith(color: Colors.black),
+  //             ),
+  //             IconButton(
+  //               color: Theme.of(context).accentColor,
+  //               icon: Icon(Icons.access_time),
+  //               onPressed: modifyScheduleTime,
+  //             )
+  //           ],
+  //         ),
+  //     ),
+  //   );
+  // }
+
+  // Widget scheduleCard(Plant plant) {
+  //   return Builder(
+  //     builder: (_) => Card(
+  //       child: plant.timeOfDay == null ? addSchedule() : modifySchedule(),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -282,7 +255,10 @@ class _PlantInfoState extends State<PlantInfo> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     SizedBox(height: 20),
-                    scheduleCard(_plantInfoBloc.plant),
+                    if (_plantInfoBloc.schedule.isEmpty) buildAddSchedule(),
+                    ..._plantInfoBloc.schedule
+                        .map((e) => ScheduleCard(schedule: e))
+                        .toList(),
                   ]),
                 ),
               ),
