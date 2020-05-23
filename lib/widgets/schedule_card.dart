@@ -1,6 +1,7 @@
 import 'package:boopplant/app_colors.dart';
 import 'package:boopplant/days.dart';
 import 'package:boopplant/models/models.dart';
+import 'package:boopplant/widgets/button_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -64,37 +65,21 @@ class ScheduleCard extends StatelessWidget {
           child: ExpansionTile(
             tilePadding: EdgeInsets.all(8),
             children: [
-              InkWell(
+              ButtonRow(
                 onTap: () {},
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        color: Theme.of(context).accentColor,
-                      ),
-                      SizedBox(width: 8,),
-                      Text("Change Time")
-                    ],
-                  ),
+                icon: Icon(
+                  Icons.mode_edit,
+                  color: Theme.of(context).accentColor,
                 ),
+                text: Text("Change Name"),
               ),
-              InkWell(
+              ButtonRow(
                 onTap: () {},
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.mode_edit,
-                        color: Theme.of(context).accentColor,
-                      ),
-                      SizedBox(width: 8,),
-                      Text("Change Name")
-                    ],
-                  ),
+                icon: Icon(
+                  Icons.access_time,
+                  color: Theme.of(context).accentColor,
                 ),
+                text: Text("Change Time"),
               ),
               dayList(),
             ],
