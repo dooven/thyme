@@ -13,6 +13,7 @@ class ScheduleRepository {
     return database
         .query(
       LocalDatabase.scheduleTableName,
+      where: 'plant_id = $plantId',
     )
         .then((value) {
       print(value.length);

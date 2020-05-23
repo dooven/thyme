@@ -54,53 +54,73 @@ class ScheduleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).copyWith(dividerColor: Colors.transparent);
+
     return Card(
       child: Container(
         margin: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(schedule.name),
-                SizedBox(width: 8.0),
-                ClipOval(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {},
-                      splashColor: Colors.white,
-                      child: Container(
-                        height: 35,
-                        width: 35,
-                        child: Center(
-                          child: Icon(Icons.edit, size: 20),
-                        ),
+        child: Theme(
+          data: theme,
+          child: ExpansionTile(
+            tilePadding: EdgeInsets.all(8),
+            children: [
+              InkWell(
+                onTap: () {},
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        color: Theme.of(context).accentColor,
                       ),
-                    ),
+                      SizedBox(width: 8,),
+                      Text("Change Time")
+                    ],
                   ),
-                )
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  schedule.timeOfDay.format(context),
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline4
-                      .copyWith(color: Colors.black),
                 ),
-                IconButton(
-                  color: Theme.of(context).accentColor,
-                  icon: Icon(Icons.access_time),
-                  onPressed: () {},
-                )
+              ),
+              InkWell(
+                onTap: () {},
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.mode_edit,
+                        color: Theme.of(context).accentColor,
+                      ),
+                      SizedBox(width: 8,),
+                      Text("Change Name")
+                    ],
+                  ),
+                ),
+              ),
+              dayList(),
+            ],
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(schedule.name),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      schedule.timeOfDay.format(context),
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline4
+                          .copyWith(color: Colors.black),
+                    ),
+                  ],
+                ),
               ],
             ),
-            dayList(),
-          ],
+          ),
         ),
       ),
     );
