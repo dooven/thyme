@@ -94,13 +94,11 @@ class ScheduleCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      schedule.timeOfDay.format(context),
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline4
-                          .copyWith(color: Colors.black),
-                    ),
+                    Text(schedule.timeOfDay.format(context),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline4
+                            .copyWith(color: Colors.black)),
                   ],
                 ),
               ],

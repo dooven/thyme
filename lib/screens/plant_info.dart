@@ -18,22 +18,11 @@ import 'package:sqflite/sqflite.dart';
 class PlantInfoScreenArguments {
   final int id;
 
-  PlantInfoScreenArguments({this.id});
-}
-
-class PlantInfoScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final PlantInfoScreenArguments screenArguments =
-        ModalRoute.of(context).settings.arguments;
-    return PlantInfo(
-      plantId: screenArguments.id,
-    );
-  }
+  const PlantInfoScreenArguments({this.id});
 }
 
 class PlantInfo extends StatefulWidget {
-  final plantId;
+  final int plantId;
 
   const PlantInfo({Key key, this.plantId}) : super(key: key);
 
@@ -48,6 +37,7 @@ class _PlantInfoState extends State<PlantInfo> {
   @override
   void dispose() {
     _plantInfoBloc.dispose();
+    _plantInfoBloc = null;
     super.dispose();
   }
 
@@ -55,7 +45,7 @@ class _PlantInfoState extends State<PlantInfo> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final database = Provider.of<Database>(context);
+    final database = Provider.of<Database>(context, listen: false);
 
     final initialBloc = PlantInfoBloc(
         plantId: widget.plantId,
@@ -228,10 +218,10 @@ class _PlantInfoState extends State<PlantInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<bool>(
+        initialData: false,
         stream: _plantInfoBloc.isScreenReady,
         builder: (context, snapshot) {
-          if (!snapshot.hasData ||
-              snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(),
             );
@@ -257,7 +247,10 @@ class _PlantInfoState extends State<PlantInfo> {
                     SizedBox(height: 20),
                     if (_plantInfoBloc.schedule.isEmpty) buildAddSchedule(),
                     ..._plantInfoBloc.schedule
-                        .map((e) => ScheduleCard(schedule: e))
+                        .map((e) => ScheduleCard(
+                              schedule: e,
+                              key: Key(e.id.toString()),
+                            ))
                         .toList(),
                   ]),
                 ),
@@ -278,7 +271,9 @@ class PlantInfoBloc {
   final _plantController = BehaviorSubject<Plant>();
   final _scheduleController = BehaviorSubject<List<Schedule>>();
 
-  PlantInfoBloc({this.plantRepository, this.scheduleRepository, this.plantId});
+  PlantInfoBloc({this.plantRepository, this.scheduleRepository, this.plantId}) {
+    print("Called ");
+  }
 
   Stream<Plant> get plantStream => _plantController.stream;
 
@@ -289,7 +284,10 @@ class PlantInfoBloc {
   List<Schedule> get schedule => _scheduleController.value;
 
   Stream<bool> get isScreenReady =>
-      CombineLatestStream([scheduleStream, plantStream], (_) => true);
+      CombineLatestStream([scheduleStream, plantStream], (_) => true)
+          .doOnData((event) {
+        print("called $event");
+      });
 
   Future<void> getPlantById() {
     return plantRepository

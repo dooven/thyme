@@ -28,15 +28,9 @@ class _TabNavigatorState extends State<TabNavigator> {
   Map<String, Widget> _routeBuilders() {
     return {
       TabNavigatorRoutes.plantList: PlantList(),
-      TabNavigatorRoutes.plantInfo: PlantInfoScreen(),
+      TabNavigatorRoutes.plantInfo: PlantInfo(),
       TabNavigatorRoutes.plantModify: PlantModify(),
     };
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    routeBuilders = _routeBuilders();
   }
 
   @override
@@ -45,15 +39,30 @@ class _TabNavigatorState extends State<TabNavigator> {
       create: (_) => PlantListBloc(
         PlantRepository(database: Provider.of<Database>(context)),
       ),
-      lazy: false,
+      dispose: (context, value) => value.dispose(),
       child: WillPopScope(
         onWillPop: () async =>
             !await widget.navigatorKey.currentState.maybePop(),
         child: Navigator(
             key: widget.navigatorKey,
             onGenerateRoute: (routeSettings) {
+              Widget widget;
+              switch (routeSettings.name) {
+                case TabNavigatorRoutes.plantList:
+                  widget = PlantList();
+                  break;
+                case TabNavigatorRoutes.plantInfo:
+                  final PlantInfoScreenArguments screenArguments =
+                      routeSettings.arguments;
+                  widget = PlantInfo(plantId: screenArguments.id);
+                  break;
+                case TabNavigatorRoutes.plantModify:
+                  widget = PlantModify();
+                  break;
+              }
+
               return MaterialPageRoute(
-                builder: (_) => routeBuilders[routeSettings.name],
+                builder: (_) => widget,
                 settings: routeSettings,
               );
             }),

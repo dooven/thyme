@@ -16,7 +16,6 @@ class ScheduleRepository {
       where: 'plant_id = $plantId',
     )
         .then((value) {
-      print(value.length);
       return value.map((e) => Schedule.fromJson(e)).toList();
     });
   }
