@@ -7,8 +7,13 @@ import 'package:flutter/widgets.dart';
 
 class ScheduleCard extends StatelessWidget {
   final Schedule schedule;
+  final Function(List<int> byweekDay) saveByWeekDayCallback;
 
-  const ScheduleCard({Key key, this.schedule}) : super(key: key);
+  const ScheduleCard({
+    Key key,
+    @required this.schedule,
+    @required this.saveByWeekDayCallback,
+  }) : super(key: key);
 
   Widget dayList() {
     return Builder(
@@ -32,7 +37,17 @@ class ScheduleCard extends StatelessWidget {
                     ? Theme.of(context).primaryColor
                     : AppColors.disabledBackground,
                 child: InkWell(
-                  onTap: () {},
+                  onTap: saveByWeekDayCallback != null
+                      ? () {
+                          final scheduleSet = schedule.byweekday.toSet();
+                          if (scheduleSet.contains(index)) {
+                            scheduleSet.remove(index);
+                          } else {
+                            scheduleSet.add(index);
+                          }
+                          saveByWeekDayCallback(scheduleSet.toList());
+                        }
+                      : null,
                   splashColor: Colors.white,
                   child: Container(
                     height: 35,

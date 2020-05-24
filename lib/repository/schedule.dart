@@ -12,12 +12,19 @@ class ScheduleRepository {
   Future<List<Schedule>> getByPlantId(int plantId) {
     return database
         .query(
-      LocalDatabase.scheduleTableName,
-      where: 'plant_id = $plantId',
-    )
-        .then((value) {
-      return value.map((e) => Schedule.fromJson(e)).toList();
-    });
+          LocalDatabase.scheduleTableName,
+          where: 'plant_id = $plantId',
+        )
+        .then((value) => value.map((e) => Schedule.fromJson(e)).toList());
+  }
+
+  Future<Schedule> getById(int id) {
+    return database
+        .query(
+          LocalDatabase.scheduleTableName,
+          where: 'id = $id',
+        )
+        .then((value) => value.map((e) => Schedule.fromJson(e)).first);
   }
 
   Future<Schedule> insert(Schedule schedule) async {

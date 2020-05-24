@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:boopplant/app_colors.dart';
-import 'package:boopplant/days.dart';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
@@ -32,7 +30,7 @@ class PlantInfo extends StatefulWidget {
 
 class _PlantInfoState extends State<PlantInfo> {
   PlantInfoBloc _plantInfoBloc;
-  Future plantUpdateFuture;
+  Future initialScheduleFuture;
 
   @override
   void dispose() {
@@ -108,19 +106,6 @@ class _PlantInfoState extends State<PlantInfo> {
     );
   }
 
-  modifyScheduleTime() async {
-    // final selectedTime =
-    //     await showTimePicker(context: context, initialTime: TimeOfDay.now());
-
-    // if (selectedTime == null) return;
-
-    // setState(() {
-    //   plantUpdateFuture = _plantInfoBloc.plantRepository
-    //       .update(widget.plantId, timeOfDay: selectedTime)
-    //       .then((_) => _plantInfoBloc.getPlantById());
-    // });
-  }
-
   toggleDay(int day) {
     final byweekday = _plantInfoBloc.plant.byweekday;
     List<int> newByWeekDay = [];
@@ -131,18 +116,12 @@ class _PlantInfoState extends State<PlantInfo> {
         ..addAll(byweekday)
         ..add(day);
     }
-
-    // setState(() {
-    //   plantUpdateFuture = _plantInfoBloc.plantRepository
-    //       .update(widget.plantId, byweekday: newByWeekDay)
-    //       .then((_) => _plantInfoBloc.getPlantById());
-    // });
   }
 
   Widget buildAddSchedule() {
     void add() {
       setState(() {
-        plantUpdateFuture = _plantInfoBloc.scheduleRepository
+        initialScheduleFuture = _plantInfoBloc.scheduleRepository
             .insert(Schedule(
                 byweekday: [],
                 name: 'New Schedule',
@@ -155,7 +134,7 @@ class _PlantInfoState extends State<PlantInfo> {
 
     return Card(
       child: FutureBuilder(
-        future: plantUpdateFuture,
+        future: initialScheduleFuture,
         builder: (context, snapshot) {
           final isLoading = snapshot.connectionState == ConnectionState.waiting;
           return InkWell(
@@ -177,42 +156,6 @@ class _PlantInfoState extends State<PlantInfo> {
       ),
     );
   }
-
-  // Widget modifySchedule() {
-  //   final timeOfDay = _plantInfoBloc.plant.timeOfDay;
-  //   return Container(
-  //     margin: EdgeInsets.all(16.0),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //           children: [
-  //             Text(
-  //               timeOfDay.format(context),
-  //               style: Theme.of(context)
-  //                   .textTheme
-  //                   .headline4
-  //                   .copyWith(color: Colors.black),
-  //             ),
-  //             IconButton(
-  //               color: Theme.of(context).accentColor,
-  //               icon: Icon(Icons.access_time),
-  //               onPressed: modifyScheduleTime,
-  //             )
-  //           ],
-  //         ),
-  //     ),
-  //   );
-  // }
-
-  // Widget scheduleCard(Plant plant) {
-  //   return Builder(
-  //     builder: (_) => Card(
-  //       child: plant.timeOfDay == null ? addSchedule() : modifySchedule(),
-  //     ),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -246,18 +189,59 @@ class _PlantInfoState extends State<PlantInfo> {
                   delegate: SliverChildListDelegate([
                     SizedBox(height: 20),
                     if (_plantInfoBloc.schedule.isEmpty) buildAddSchedule(),
-                    ..._plantInfoBloc.schedule
-                        .map((e) => ScheduleCard(
-                              schedule: e,
-                              key: Key(e.id.toString()),
-                            ))
-                        .toList(),
                   ]),
                 ),
               ),
+              ScheduleList(plantInfoBloc: _plantInfoBloc),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class ScheduleList extends StatefulWidget {
+  const ScheduleList({
+    Key key,
+    @required PlantInfoBloc plantInfoBloc,
+  })  : _plantInfoBloc = plantInfoBloc,
+        super(key: key);
+
+  final PlantInfoBloc _plantInfoBloc;
+
+  @override
+  _ScheduleListState createState() => _ScheduleListState();
+}
+
+class _ScheduleListState extends State<ScheduleList> {
+  Map<int, Future> individualScheduleFuture = {};
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverPadding(
+      padding: EdgeInsets.all(16.0),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (BuildContext context, int index) {
+            final e = widget._plantInfoBloc.schedule[index];
+            return FutureBuilder(
+                key: Key(e.id.toString()),
+                future: individualScheduleFuture[e.id],
+                builder: (context, snapshot) {
+                  return ScheduleCard(
+                    schedule: e,
+                    saveByWeekDayCallback: (byweekDay) {
+                      setState(() {
+                        individualScheduleFuture[e.id] = widget._plantInfoBloc
+                            .updateScheduleByWeekly(e.id, byweekday: byweekDay);
+                      });
+                    },
+                  );
+                });
+          },
+          childCount: widget._plantInfoBloc.schedule.length,
+        ),
       ),
     );
   }
@@ -271,9 +255,7 @@ class PlantInfoBloc {
   final _plantController = BehaviorSubject<Plant>();
   final _scheduleController = BehaviorSubject<List<Schedule>>();
 
-  PlantInfoBloc({this.plantRepository, this.scheduleRepository, this.plantId}) {
-    print("Called ");
-  }
+  PlantInfoBloc({this.plantRepository, this.scheduleRepository, this.plantId});
 
   Stream<Plant> get plantStream => _plantController.stream;
 
@@ -284,10 +266,7 @@ class PlantInfoBloc {
   List<Schedule> get schedule => _scheduleController.value;
 
   Stream<bool> get isScreenReady =>
-      CombineLatestStream([scheduleStream, plantStream], (_) => true)
-          .doOnData((event) {
-        print("called $event");
-      });
+      CombineLatestStream([scheduleStream, plantStream], (_) => true);
 
   Future<void> getPlantById() {
     return plantRepository
@@ -301,10 +280,21 @@ class PlantInfoBloc {
   Future<void> getSchedulesByPlantId() {
     return scheduleRepository
         .getByPlantId(plantId)
+        .then((value) {
+          return value;
+        })
         .then(_scheduleController.add)
         .catchError((error) => _plantController.addError(
               "Failed to fetch schedules. Please try again later",
             ));
+  }
+
+  Future<void> updateScheduleByWeekly(int scheduleId, {List<int> byweekday}) {
+    return scheduleRepository
+        .update(scheduleId, byweekday: byweekday)
+        .then((_) => scheduleRepository.getById(scheduleId))
+        .then((value) => _scheduleController
+            .add(schedule.map((e) => e.id == value.id ? value : e).toList()));
   }
 
   void dispose() {

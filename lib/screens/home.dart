@@ -25,14 +25,6 @@ class TabNavigator extends StatefulWidget {
 class _TabNavigatorState extends State<TabNavigator> {
   Map<String, Widget> routeBuilders;
 
-  Map<String, Widget> _routeBuilders() {
-    return {
-      TabNavigatorRoutes.plantList: PlantList(),
-      TabNavigatorRoutes.plantInfo: PlantInfo(),
-      TabNavigatorRoutes.plantModify: PlantModify(),
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     return Provider<PlantListBloc>(
