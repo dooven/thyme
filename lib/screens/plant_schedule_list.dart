@@ -1,18 +1,20 @@
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/widgets/schedule_card.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class ScheduleList extends StatefulWidget {
   const ScheduleList({
     Key key,
     @required List<Schedule> schedule,
-    @required Function(int id, {List<int> byweekday}) updateScheduleByWeekly,
+    @required
+        Function(int id, {List<int> byweekday, String name}) updateSchedule,
   })  : _schedule = schedule,
-        _updateScheduleByWeekly = updateScheduleByWeekly,
+        _updateSchedule = updateSchedule,
         super(key: key);
 
   final List<Schedule> _schedule;
-  final Function(int id, {List<int> byweekday}) _updateScheduleByWeekly;
+  final Function(int id, {List<int> byweekday, String name}) _updateSchedule;
 
   @override
   _ScheduleListState createState() => _ScheduleListState();
@@ -20,6 +22,37 @@ class ScheduleList extends StatefulWidget {
 
 class _ScheduleListState extends State<ScheduleList> {
   Map<int, Future> individualScheduleFuture = {};
+
+  Future<void> _modifyScheduleName(Schedule schedule) {
+    final textController = TextEditingController(text: schedule.name);
+
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: TextFormField(controller: textController),
+            actions: <Widget>[
+              RaisedButton(
+                onPressed: textController.text.isNotEmpty
+                    ? () {
+                        setState(() {
+                          individualScheduleFuture[schedule.id] =
+                              widget._updateSchedule(schedule.id,
+                                  name: textController.text);
+                        });
+                        Navigator.of(context).pop();
+                      }
+                    : null,
+                child: const Text('Save'),
+              ),
+              OutlineButton(
+                onPressed: Navigator.of(context).pop,
+                child: const Text('Cancel'),
+              ),
+            ],
+          );
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +68,13 @@ class _ScheduleListState extends State<ScheduleList> {
                 builder: (context, snapshot) {
                   return ScheduleCard(
                     schedule: e,
+                    onTapScheduleNameEdit: () {
+                      _modifyScheduleName(e);
+                    },
                     saveByWeekDayCallback: (byweekDay) {
                       setState(() {
                         individualScheduleFuture[e.id] =
-                            widget._updateScheduleByWeekly(e.id,
-                                byweekday: byweekDay);
+                            widget._updateSchedule(e.id, byweekday: byweekDay);
                       });
                     },
                   );

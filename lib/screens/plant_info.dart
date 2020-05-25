@@ -197,7 +197,7 @@ class _PlantInfoState extends State<PlantInfo> {
               ),
               ScheduleList(
                 schedule: _plantInfoBloc.schedule,
-                updateScheduleByWeekly: _plantInfoBloc.updateScheduleByWeekly,
+                updateSchedule: _plantInfoBloc.updateSchedule,
               ),
             ],
           );
@@ -249,9 +249,10 @@ class PlantInfoBloc {
             ));
   }
 
-  Future<void> updateScheduleByWeekly(int scheduleId, {List<int> byweekday}) {
+  Future<void> updateSchedule(int scheduleId,
+      {List<int> byweekday, String name}) {
     return scheduleRepository
-        .update(scheduleId, byweekday: byweekday)
+        .update(scheduleId, byweekday: byweekday, name: name)
         .then((_) => scheduleRepository.getById(scheduleId))
         .then((value) => _scheduleController
             .add(schedule.map((e) => e.id == value.id ? value : e).toList()));

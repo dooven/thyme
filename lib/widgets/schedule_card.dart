@@ -8,11 +8,13 @@ import 'package:flutter/widgets.dart';
 class ScheduleCard extends StatelessWidget {
   final Schedule schedule;
   final Function(List<int> byweekDay) saveByWeekDayCallback;
+  final Function() onTapScheduleNameEdit;
 
   const ScheduleCard({
     Key key,
     @required this.schedule,
     @required this.saveByWeekDayCallback,
+    @required this.onTapScheduleNameEdit,
   }) : super(key: key);
 
   Widget dayList() {
@@ -81,7 +83,7 @@ class ScheduleCard extends StatelessWidget {
             tilePadding: EdgeInsets.all(8),
             children: [
               ButtonRow(
-                onTap: () {},
+                onTap: onTapScheduleNameEdit,
                 icon: Icon(
                   Icons.mode_edit,
                   color: Theme.of(context).accentColor,
