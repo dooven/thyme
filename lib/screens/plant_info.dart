@@ -91,13 +91,20 @@ class _PlantInfoState extends State<PlantInfo> {
           const DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment(0.0, 1),
-                end: Alignment(0.0, 0.0),
-                colors: <Color>[
-                  Color(0x50000000),
-                  Color(0x00000000),
-                ],
-              ),
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: <Color>[
+                    Color(0x50000000),
+                    Color(0x00000000),
+                    Color(0x00000000),
+                    Color(0x50000000),
+                  ],
+                  stops: [
+                    0,
+                    0.2,
+                    0.5,
+                    1
+                  ]),
             ),
           ),
         ],
@@ -107,18 +114,6 @@ class _PlantInfoState extends State<PlantInfo> {
         style: TextStyle(color: Colors.white),
       ),
     );
-  }
-
-  toggleDay(int day) {
-    final byweekday = _plantInfoBloc.plant.byweekday;
-    List<int> newByWeekDay = [];
-    if (byweekday.contains(day)) {
-      newByWeekDay = byweekday.where((element) => element != day).toList();
-    } else {
-      newByWeekDay
-        ..addAll(byweekday)
-        ..add(day);
-    }
   }
 
   void addFirstSchedule() {
@@ -178,14 +173,17 @@ class _PlantInfoState extends State<PlantInfo> {
             );
           }
 
-          return SliverFab(
-            floatingWidget: FloatingActionButton(
-              onPressed: () => editPlant(_plantInfoBloc.plant),
-              child: Icon(Icons.edit),
-            ),
-            expandedHeight: 300.0,
+          return CustomScrollView(
             slivers: [
               SliverAppBar(
+                actions: [
+                  IconButton(
+                    onPressed: () => editPlant(_plantInfoBloc.plant),
+                    icon: Icon(
+                      Icons.more_vert,
+                    ),
+                  )
+                ],
                 iconTheme: IconThemeData(color: Colors.white),
                 floating: true,
                 expandedHeight: 300.0,
