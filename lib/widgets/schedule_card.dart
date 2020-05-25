@@ -82,6 +82,7 @@ class ScheduleCard extends StatelessWidget {
         child: Theme(
           data: theme,
           child: ExpansionTile(
+            key: PageStorageKey(schedule),
             tilePadding: EdgeInsets.all(8),
             children: [
               Builder(
