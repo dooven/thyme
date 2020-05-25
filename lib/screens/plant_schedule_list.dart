@@ -8,13 +8,16 @@ class ScheduleList extends StatefulWidget {
     Key key,
     @required List<Schedule> schedule,
     @required
-        Function(int id, {List<int> byweekday, String name}) updateSchedule,
+        Function(int id,
+                {List<int> byweekday, String name, TimeOfDay timeOfDay})
+            updateSchedule,
   })  : _schedule = schedule,
         _updateSchedule = updateSchedule,
         super(key: key);
 
   final List<Schedule> _schedule;
-  final Function(int id, {List<int> byweekday, String name}) _updateSchedule;
+  final Function(int id,
+      {List<int> byweekday, String name, TimeOfDay timeOfDay}) _updateSchedule;
 
   @override
   _ScheduleListState createState() => _ScheduleListState();
@@ -70,6 +73,15 @@ class _ScheduleListState extends State<ScheduleList> {
                     schedule: e,
                     onTapScheduleNameEdit: () {
                       _modifyScheduleName(e);
+                    },
+                    onTapScheduleTimeEdit: () async {
+                      final response = await showTimePicker(
+                          context: context, initialTime: e.timeOfDay);
+                      if (response == null) return;
+                      setState(() {
+                        individualScheduleFuture[e.id] =
+                            widget._updateSchedule(e.id, timeOfDay: response);
+                      });
                     },
                     saveByWeekDayCallback: (byweekDay) {
                       setState(() {

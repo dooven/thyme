@@ -250,9 +250,10 @@ class PlantInfoBloc {
   }
 
   Future<void> updateSchedule(int scheduleId,
-      {List<int> byweekday, String name}) {
+      {List<int> byweekday, String name, TimeOfDay timeOfDay}) {
     return scheduleRepository
-        .update(scheduleId, byweekday: byweekday, name: name)
+        .update(scheduleId,
+            byweekday: byweekday, name: name, timeOfDay: timeOfDay)
         .then((_) => scheduleRepository.getById(scheduleId))
         .then((value) => _scheduleController
             .add(schedule.map((e) => e.id == value.id ? value : e).toList()));

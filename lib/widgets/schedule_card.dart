@@ -9,12 +9,14 @@ class ScheduleCard extends StatelessWidget {
   final Schedule schedule;
   final Function(List<int> byweekDay) saveByWeekDayCallback;
   final Function() onTapScheduleNameEdit;
+  final Function() onTapScheduleTimeEdit;
 
   const ScheduleCard({
     Key key,
     @required this.schedule,
     @required this.saveByWeekDayCallback,
     @required this.onTapScheduleNameEdit,
+    @required this.onTapScheduleTimeEdit,
   }) : super(key: key);
 
   Widget dayList() {
@@ -91,7 +93,7 @@ class ScheduleCard extends StatelessWidget {
                 text: Text("Change Name"),
               ),
               ButtonRow(
-                onTap: () {},
+                onTap: onTapScheduleTimeEdit,
                 icon: Icon(
                   Icons.access_time,
                   color: Theme.of(context).accentColor,
