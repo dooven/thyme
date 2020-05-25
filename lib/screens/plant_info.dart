@@ -33,6 +33,7 @@ class _PlantInfoState extends State<PlantInfo> {
   PlantInfoBloc _plantInfoBloc;
   Stream<bool> _isScreenReady;
   Future initialScheduleFuture;
+  ScrollController _controller = ScrollController();
 
   @override
   void dispose() {
@@ -125,7 +126,14 @@ class _PlantInfoState extends State<PlantInfo> {
               timeOfDay: TimeOfDay.now(),
               createdAt: DateTime.now(),
               plantId: widget.plantId))
-          .then((_) => _plantInfoBloc.getSchedulesByPlantId());
+          .then((_) => _plantInfoBloc.getSchedulesByPlantId())
+          .then(
+            (value) => _controller.animateTo(
+              _controller.position.maxScrollExtent,
+              curve: Curves.easeOut,
+              duration: const Duration(milliseconds: 300),
+            ),
+          );
     });
   }
 
@@ -174,6 +182,7 @@ class _PlantInfoState extends State<PlantInfo> {
           }
 
           return CustomScrollView(
+            controller: _controller,
             slivers: [
               SliverAppBar(
                 actions: [
@@ -193,7 +202,6 @@ class _PlantInfoState extends State<PlantInfo> {
                 padding: EdgeInsets.all(16.0),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    SizedBox(height: 20),
                     if (_plantInfoBloc.schedule.isEmpty) buildAddSchedule(),
                   ]),
                 ),

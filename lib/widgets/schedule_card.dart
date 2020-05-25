@@ -84,13 +84,35 @@ class ScheduleCard extends StatelessWidget {
           child: ExpansionTile(
             tilePadding: EdgeInsets.all(8),
             children: [
-              ButtonRow(
-                onTap: onTapScheduleNameEdit,
-                icon: Icon(
-                  Icons.mode_edit,
-                  color: Theme.of(context).accentColor,
-                ),
-                text: Text("Change Name"),
+              Builder(
+                builder: (context) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: ButtonRow(
+                          onTap: onTapScheduleNameEdit,
+                          icon: Icon(
+                            Icons.mode_edit,
+                            color: Theme.of(context).accentColor,
+                          ),
+                          text: Text("Change Name"),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: ButtonRow(
+                          onTap: onTapScheduleNameEdit,
+                          icon: Icon(
+                            Icons.remove_circle,
+                            color: Theme.of(context).accentColor,
+                          ),
+                          text: Text("Remove Schedule"),
+                        ),
+                      )
+                    ],
+                  );
+                },
               ),
               ButtonRow(
                 onTap: onTapScheduleTimeEdit,
