@@ -66,6 +66,7 @@ class PlantList extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
+        heroTag: "add-fab",
         onPressed: () =>
             Navigator.of(context).pushNamed(TabNavigatorRoutes.plantModify),
         tooltip: 'Increment',

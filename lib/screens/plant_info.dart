@@ -121,27 +121,27 @@ class _PlantInfoState extends State<PlantInfo> {
     }
   }
 
-  Widget buildAddSchedule() {
-    void add() {
-      setState(() {
-        initialScheduleFuture = _plantInfoBloc.scheduleRepository
-            .insert(Schedule(
-                byweekday: [],
-                name: 'New Schedule',
-                timeOfDay: TimeOfDay.now(),
-                createdAt: DateTime.now(),
-                plantId: widget.plantId))
-            .then((_) => _plantInfoBloc.getSchedulesByPlantId());
-      });
-    }
+  void addFirstSchedule() {
+    setState(() {
+      initialScheduleFuture = _plantInfoBloc.scheduleRepository
+          .insert(Schedule(
+              byweekday: [],
+              name: 'New Schedule',
+              timeOfDay: TimeOfDay.now(),
+              createdAt: DateTime.now(),
+              plantId: widget.plantId))
+          .then((_) => _plantInfoBloc.getSchedulesByPlantId());
+    });
+  }
 
+  Widget buildAddSchedule() {
     return Card(
       child: FutureBuilder(
         future: initialScheduleFuture,
         builder: (context, snapshot) {
           final isLoading = snapshot.connectionState == ConnectionState.waiting;
           return InkWell(
-            onTap: isLoading ? null : add,
+            onTap: isLoading ? null : addFirstSchedule,
             child: Container(
               margin: EdgeInsets.all(16.0),
               child: Row(
@@ -163,6 +163,11 @@ class _PlantInfoState extends State<PlantInfo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        heroTag: "add-fab",
+        child: Icon(Icons.add),
+        onPressed: addFirstSchedule,
+      ),
       body: StreamBuilder<bool>(
         initialData: false,
         stream: _isScreenReady,

@@ -37,6 +37,9 @@ class _TabNavigatorState extends State<TabNavigator> {
             !await widget.navigatorKey.currentState.maybePop(),
         child: Navigator(
             key: widget.navigatorKey,
+            observers: [
+              HeroController(),
+            ],
             onGenerateRoute: (routeSettings) {
               Widget widget;
               switch (routeSettings.name) {
