@@ -5,13 +5,14 @@ import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
 import 'package:boopplant/screens/home.dart';
 import 'package:boopplant/screens/plant_modify.dart';
-import 'package:boopplant/widgets/schedule_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sliver_fab/sliver_fab.dart';
 import 'package:sqflite/sqflite.dart';
+
+import 'plant_schedule_list.dart';
 
 class PlantInfoScreenArguments {
   final int id;
@@ -30,6 +31,7 @@ class PlantInfo extends StatefulWidget {
 
 class _PlantInfoState extends State<PlantInfo> {
   PlantInfoBloc _plantInfoBloc;
+  Stream<bool> _isScreenReady;
   Future initialScheduleFuture;
 
   @override
@@ -54,6 +56,7 @@ class _PlantInfoState extends State<PlantInfo> {
       _plantInfoBloc = initialBloc;
       _plantInfoBloc.getPlantById();
       _plantInfoBloc.getSchedulesByPlantId();
+      _isScreenReady = _plantInfoBloc.isScreenReady;
     }
   }
 
@@ -162,7 +165,7 @@ class _PlantInfoState extends State<PlantInfo> {
     return Scaffold(
       body: StreamBuilder<bool>(
         initialData: false,
-        stream: _plantInfoBloc.isScreenReady,
+        stream: _isScreenReady,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -192,56 +195,13 @@ class _PlantInfoState extends State<PlantInfo> {
                   ]),
                 ),
               ),
-              ScheduleList(plantInfoBloc: _plantInfoBloc),
+              ScheduleList(
+                schedule: _plantInfoBloc.schedule,
+                updateScheduleByWeekly: _plantInfoBloc.updateScheduleByWeekly,
+              ),
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class ScheduleList extends StatefulWidget {
-  const ScheduleList({
-    Key key,
-    @required PlantInfoBloc plantInfoBloc,
-  })  : _plantInfoBloc = plantInfoBloc,
-        super(key: key);
-
-  final PlantInfoBloc _plantInfoBloc;
-
-  @override
-  _ScheduleListState createState() => _ScheduleListState();
-}
-
-class _ScheduleListState extends State<ScheduleList> {
-  Map<int, Future> individualScheduleFuture = {};
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverPadding(
-      padding: EdgeInsets.all(16.0),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (BuildContext context, int index) {
-            final e = widget._plantInfoBloc.schedule[index];
-            return FutureBuilder(
-                key: Key(e.id.toString()),
-                future: individualScheduleFuture[e.id],
-                builder: (context, snapshot) {
-                  return ScheduleCard(
-                    schedule: e,
-                    saveByWeekDayCallback: (byweekDay) {
-                      setState(() {
-                        individualScheduleFuture[e.id] = widget._plantInfoBloc
-                            .updateScheduleByWeekly(e.id, byweekday: byweekDay);
-                      });
-                    },
-                  );
-                });
-          },
-          childCount: widget._plantInfoBloc.schedule.length,
-        ),
       ),
     );
   }
