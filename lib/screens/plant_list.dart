@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/screens/plant_info.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +22,8 @@ class PlantList extends StatelessWidget {
                   )
                 : null,
             backgroundColor: Theme.of(context).backgroundColor,
-            backgroundImage: hasImageURL ? AssetImage(plant.imageUrl) : null,
+            backgroundImage:
+                hasImageURL ? FileImage(File(plant.imageUrl)) : null,
           ),
           title: Text(plant.name),
           onTap: () {
@@ -63,6 +66,7 @@ class PlantList extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
+        heroTag: "add-fab",
         onPressed: () =>
             Navigator.of(context).pushNamed(TabNavigatorRoutes.plantModify),
         tooltip: 'Increment',

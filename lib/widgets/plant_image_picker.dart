@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -25,7 +26,7 @@ class PlantImagePicker extends StatelessWidget {
         color: hasImage ? null : Theme.of(context).backgroundColor,
         image: hasImage
             ? DecorationImage(
-                image: AssetImage(imageUrl),
+                image: FileImage(File(imageUrl)),
                 fit: BoxFit.cover,
               )
             : null,

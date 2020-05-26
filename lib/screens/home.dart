@@ -1,7 +1,6 @@
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/screens.dart';
-import 'package:boopplant/widgets/route_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -24,31 +23,41 @@ class TabNavigator extends StatefulWidget {
 }
 
 class _TabNavigatorState extends State<TabNavigator> {
-  Map<String, Widget> _routeBuilders() {
-    return {
-      TabNavigatorRoutes.plantList: PlantList(),
-      TabNavigatorRoutes.plantInfo: PlantInfo(),
-      TabNavigatorRoutes.plantModify: PlantModify(),
-    };
-  }
+  Map<String, Widget> routeBuilders;
 
   @override
   Widget build(BuildContext context) {
-    var routeBuilders = _routeBuilders();
-
     return Provider<PlantListBloc>(
       create: (_) => PlantListBloc(
         PlantRepository(database: Provider.of<Database>(context)),
       ),
+      dispose: (context, value) => value.dispose(),
       child: WillPopScope(
         onWillPop: () async =>
             !await widget.navigatorKey.currentState.maybePop(),
         child: Navigator(
-            initialRoute: '/',
             key: widget.navigatorKey,
+            observers: [
+              HeroController(),
+            ],
             onGenerateRoute: (routeSettings) {
-              return SlideRightRoute(
-                widget: routeBuilders[routeSettings.name],
+              Widget widget;
+              switch (routeSettings.name) {
+                case TabNavigatorRoutes.plantList:
+                  widget = PlantList();
+                  break;
+                case TabNavigatorRoutes.plantInfo:
+                  final PlantInfoScreenArguments screenArguments =
+                      routeSettings.arguments;
+                  widget = PlantInfo(plantId: screenArguments.id);
+                  break;
+                case TabNavigatorRoutes.plantModify:
+                  widget = PlantModify();
+                  break;
+              }
+
+              return MaterialPageRoute(
+                builder: (_) => widget,
                 settings: routeSettings,
               );
             }),

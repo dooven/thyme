@@ -1,1 +1,2 @@
-export 'package:boopplant/models/plant.dart';
+export 'plant.dart';
+export 'schedule.dart';

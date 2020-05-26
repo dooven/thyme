@@ -7,6 +7,7 @@ class LocalDatabase {
 
   static final databaseName = 'database.sqlite';
   static final plantTableName = 'plant';
+  static final scheduleTableName = 'schedule';
 
   Future<Database> setupDb() async {
     var databasesPath = await getDatabasesPath();
@@ -23,36 +24,23 @@ class LocalDatabase {
   Future openCloseV1() async {
     void _createInitialTable(Batch batch) {
       batch.execute('''
-  CREATE TABLE IF NOT EXISTS plant (
+  CREATE TABLE IF NOT EXISTS $plantTableName (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL ,
   image_url TEXT,
+  byweekday TEXT DEFAULT '[]',
+  time_of_day NUMERIC,
   created_at NUMERIC NOT NULL);''');
 
       batch.execute('''
-  CREATE TABLE IF NOT EXISTS schedule_rule (
-  id INTEGER PRIMARY KEY AUTOINCREMENT  
-  );''');
-
-      batch.execute('''
-  CREATE TABLE IF NOT EXISTS schedule (
+  CREATE TABLE IF NOT EXISTS $scheduleTableName (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  byweekday TEXT DEFAULT '[]',
+  created_at NUMERIC NOT NULL,
+  time_of_day NUMERIC,
   plant_id INTEGER,
-  schedule_rule_id INTEGER,
-  start_time INTEGER NOT NULL,
-  end_time INTEGER NOT NULL,
-  FOREIGN KEY(plant_id) REFERENCES plant(id),
-  FOREIGN KEY(schedule_rule_id) REFERENCES schedule_rule(id)
-  );''');
-
-      // INSERT TEST DATA
-      batch.execute('''
- insert into plant (name, created_at)
-values ('My Plant 1', CURRENT_TIMESTAMP);     
-      
-insert into plant (name, created_at)
-values ('My Plant 2', CURRENT_TIMESTAMP);
-      ''');
+  FOREIGN KEY(plant_id) REFERENCES $plantTableName(id));''');
     }
 
     db = await openDatabase(

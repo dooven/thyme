@@ -33,6 +33,7 @@ class _PlantModifyState extends State<PlantModify> {
     super.didChangeDependencies();
     PlantModifyScreenArgument screenArgument =
         ModalRoute.of(context).settings.arguments;
+
     _plantAddBloc = PlantAddBloc(
       plantId: screenArgument?.plantId,
       plantRepository: PlantRepository(
@@ -102,7 +103,7 @@ class _PlantModifyState extends State<PlantModify> {
     );
   }
 
-  Widget onSubmit() {
+  void onSubmit() {
     _plantAddBloc.save().then((id) {
       /**
        * [#5](https://github.com/dooven/boopplant/issues/5)
@@ -129,7 +130,7 @@ class _PlantModifyState extends State<PlantModify> {
             child: StreamBuilder(
               stream: _plantAddBloc.submitLoading,
               builder: (context, snapshot) {
-                if (snapshot.data) {
+                if (snapshot.hasData && snapshot.data) {
                   return SizedBox(
                     height: 20,
                     width: 20,
@@ -217,7 +218,6 @@ class PlantAddBloc {
       } else {
         await update();
       }
-      await Future.delayed(Duration(seconds: 2));
     } finally {
       _submitLoadingController.add(false);
     }
