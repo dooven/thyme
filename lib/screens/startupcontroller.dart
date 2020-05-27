@@ -1,7 +1,9 @@
 import 'package:boopplant/blocs/bloc.dart';
+import 'package:boopplant/navigation.dart';
 import 'package:boopplant/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -41,12 +43,19 @@ class _StartupControllerState extends State<StartupController> {
                 ),
               );
             } else {
-              renderer = TabNavigator(navigatorKey: navigatorKey);
+              renderer = TabNavigator(
+                navigatorKey: homeScreenNavigationKey,
+              );
             }
 
             return AnimatedSwitcher(
               duration: Duration(seconds: 1),
-              child: renderer,
+              child: ProxyProvider<NotificationBloc,
+                  FlutterLocalNotificationsPlugin>(
+                update: (_, notificationBloc, __) =>
+                    notificationBloc.flutterLocalNotificationsPlugin,
+                child: renderer,
+              ),
             );
           }),
     );

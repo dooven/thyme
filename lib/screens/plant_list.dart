@@ -4,6 +4,7 @@ import 'package:boopplant/models/models.dart';
 import 'package:boopplant/screens/plant_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 
 import 'home.dart';
@@ -67,8 +68,29 @@ class PlantList extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         heroTag: "add-fab",
-        onPressed: () =>
-            Navigator.of(context).pushNamed(TabNavigatorRoutes.plantModify),
+        onPressed: () async {
+          final nav = context.read<FlutterLocalNotificationsPlugin>();
+          // await nav.cancelAll();
+
+          var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+              'your channel id',
+              'your channel name',
+              'your channel description',
+              importance: Importance.Max,
+              priority: Priority.High,
+              ticker: 'ticker');
+          var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+          var platformChannelSpecifics = NotificationDetails(
+              androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+
+          await nav
+              .periodicallyShow(0, 'repeating title', 'repeating body',
+                  RepeatInterval.EveryMinute, platformChannelSpecifics)
+              .catchError((error) {
+            print(error);
+          });
+          Navigator.of(context).pushNamed(TabNavigatorRoutes.plantModify);
+        },
         tooltip: 'Increment',
         child: Icon(Icons.add),
         elevation: 2.0,

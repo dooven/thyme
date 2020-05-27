@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:boopplant/blocs/notification.dart';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/screens.dart';
@@ -24,6 +27,33 @@ class TabNavigator extends StatefulWidget {
 
 class _TabNavigatorState extends State<TabNavigator> {
   Map<String, Widget> routeBuilders;
+  NotificationBloc notificationBloc;
+  StreamSubscription notificationSub;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final _notificationBloc = context.read<NotificationBloc>();
+
+    if (notificationBloc != _notificationBloc) {
+      notificationSub?.cancel();
+      notificationBloc = _notificationBloc;
+      notificationSub =
+          notificationBloc.notificationMessageStream.listen((event) {
+        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          widget.navigatorKey.currentState.pushNamed('/plant/info',
+              arguments: PlantInfoScreenArguments(id: 1));
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    notificationBloc?.dispose();
+    notificationSub?.cancel();
+  }
 
   @override
   Widget build(BuildContext context) {
