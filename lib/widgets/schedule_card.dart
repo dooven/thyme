@@ -20,56 +20,57 @@ class ScheduleCard extends StatelessWidget {
   }) : super(key: key);
 
   Widget dayList() {
-    return Builder(
-      builder: (context) => Row(
-          children: List.generate(
-        7,
-        (index) {
-          final byweekday = schedule.byweekday;
-          final isScheduledForCurrentDay = byweekday.contains(index);
-          var dayTextStyle = Theme.of(context).textTheme.bodyText1;
+    return Container();
+    // return Builder(
+    //   builder: (context) => Row(
+    //       children: List.generate(
+    //     7,
+    //     (index) {
+    //       final byweekday = schedule.byweekday;
+    //       final isScheduledForCurrentDay = byweekday.contains(index);
+    //       var dayTextStyle = Theme.of(context).textTheme.bodyText1;
 
-          if (!isScheduledForCurrentDay) {
-            dayTextStyle = dayTextStyle.copyWith(color: AppColors.disabledText);
-          }
+    //       if (!isScheduledForCurrentDay) {
+    //         dayTextStyle = dayTextStyle.copyWith(color: AppColors.disabledText);
+    //       }
 
-          return Container(
-            margin: EdgeInsets.only(right: 8, top: 16),
-            child: ClipOval(
-              child: Material(
-                color: isScheduledForCurrentDay
-                    ? Theme.of(context).primaryColor
-                    : AppColors.disabledBackground,
-                child: InkWell(
-                  onTap: saveByWeekDayCallback != null
-                      ? () {
-                          final scheduleSet = schedule.byweekday.toSet();
-                          if (scheduleSet.contains(index)) {
-                            scheduleSet.remove(index);
-                          } else {
-                            scheduleSet.add(index);
-                          }
-                          saveByWeekDayCallback(scheduleSet.toList());
-                        }
-                      : null,
-                  splashColor: Colors.white,
-                  child: Container(
-                    height: 35,
-                    width: 35,
-                    child: Center(
-                      child: Text(
-                        Days.dayNumberToLetter(index),
-                        style: dayTextStyle,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      )),
-    );
+    //       return Container(
+    //         margin: EdgeInsets.only(right: 8, top: 16),
+    //         child: ClipOval(
+    //           child: Material(
+    //             color: isScheduledForCurrentDay
+    //                 ? Theme.of(context).primaryColor
+    //                 : AppColors.disabledBackground,
+    //             child: InkWell(
+    //               onTap: saveByWeekDayCallback != null
+    //                   ? () {
+    //                       final scheduleSet = schedule.byweekday.toSet();
+    //                       if (scheduleSet.contains(index)) {
+    //                         scheduleSet.remove(index);
+    //                       } else {
+    //                         scheduleSet.add(index);
+    //                       }
+    //                       saveByWeekDayCallback(scheduleSet.toList());
+    //                     }
+    //                   : null,
+    //               splashColor: Colors.white,
+    //               child: Container(
+    //                 height: 35,
+    //                 width: 35,
+    //                 child: Center(
+    //                   child: Text(
+    //                     Days.dayNumberToLetter(index),
+    //                     style: dayTextStyle,
+    //                   ),
+    //                 ),
+    //               ),
+    //             ),
+    //           ),
+    //         ),
+    //       );
+    //     },
+    //   )),
+    // );
   }
 
   @override

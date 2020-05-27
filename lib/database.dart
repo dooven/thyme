@@ -8,6 +8,8 @@ class LocalDatabase {
   static final databaseName = 'database.sqlite';
   static final plantTableName = 'plant';
   static final scheduleTableName = 'schedule';
+  static final scheduleNotificationByweekdayTableName =
+      'schedule_notification_byweekday';
 
   Future<Database> setupDb() async {
     var databasesPath = await getDatabasesPath();
@@ -28,19 +30,23 @@ class LocalDatabase {
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL ,
   image_url TEXT,
-  byweekday TEXT DEFAULT '[]',
-  time_of_day NUMERIC,
   created_at NUMERIC NOT NULL);''');
 
       batch.execute('''
   CREATE TABLE IF NOT EXISTS $scheduleTableName (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  byweekday TEXT DEFAULT '[]',
   created_at NUMERIC NOT NULL,
   time_of_day NUMERIC,
   plant_id INTEGER,
   FOREIGN KEY(plant_id) REFERENCES $plantTableName(id));''');
+
+      batch.execute('''
+ CREATE TABLE IF NOT EXISTS $scheduleNotificationByweekdayTableName (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  day INT NOT NULL,
+  schedule_id INTEGER,
+  FOREIGN KEY(schedule_id) REFERENCES $scheduleTableName(id)) ;''');
     }
 
     db = await openDatabase(
