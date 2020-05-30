@@ -44,6 +44,7 @@ class ScheduleRepository {
   }) {
     final updateValues = {
       if (timeOfDay != null) 'time_of_day': timeOfDayToMilli(timeOfDay),
+      if (byweekday != null) 'byweekday': Plant.byweekdayToJSON(byweekday),
       if (name != null) 'name': name,
     };
 

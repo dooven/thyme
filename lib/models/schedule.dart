@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:json_annotation/json_annotation.dart';
+import 'dart:convert';
 
 import 'package:boopplant/convert.dart';
+import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'schedule.g.dart';
 
@@ -21,18 +22,43 @@ class Schedule {
   TimeOfDay timeOfDay;
 
   @JsonKey(
+    name: "byweekday",
+    toJson: byweekdayToJSON,
+    fromJson: byweekdayFromJSON,
+  )
+  List<int> byweekday;
+
+  @JsonKey(
     name: "created_at",
     toJson: dateTimeToMilli,
     fromJson: milliToDateTime,
   )
   DateTime createdAt;
 
-  Schedule({this.id, this.name, this.timeOfDay, this.createdAt, this.plantId});
+  Schedule(
+      {this.id,
+      this.name,
+      this.timeOfDay,
+      this.byweekday,
+      this.createdAt,
+      this.plantId});
 
   factory Schedule.fromJson(Map<String, dynamic> json) =>
       _$ScheduleFromJson(json);
 
   Map<String, dynamic> toJson() => _$ScheduleToJson(this);
+
+  static String byweekdayToJSON(List<int> value) {
+    if (value == null) return null;
+
+    return jsonEncode(value);
+  }
+
+  static List<int> byweekdayFromJSON(String value) {
+    if (value == null) return [];
+    final List<dynamic> test = jsonDecode(value);
+    return test.cast<int>();
+  }
 
   static int timeOfDayToJSON(TimeOfDay timeOfDay) {
     if (timeOfDay == null) return null;
@@ -45,24 +71,4 @@ class Schedule {
 
     return milliToTimeOfDay(milli);
   }
-}
-
-@JsonSerializable(includeIfNull: false)
-class ScheduleNotificationByweekday {
-  int id;
-  @JsonKey(name: "schedule_id")
-  int plantId;
-
-  int day;
-
-  ScheduleNotificationByweekday({
-    this.id,
-    this.plantId,
-    this.day,
-  });
-
-  factory ScheduleNotificationByweekday.fromJson(Map<String, dynamic> json) =>
-      _$ScheduleNotificationByweekdayFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ScheduleNotificationByweekdayToJson(this);
 }

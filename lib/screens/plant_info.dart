@@ -121,6 +121,7 @@ class _PlantInfoState extends State<PlantInfo> {
     setState(() {
       initialScheduleFuture = _plantInfoBloc.scheduleRepository
           .insert(Schedule(
+              byweekday: [],
               name: 'New Schedule',
               timeOfDay: TimeOfDay.now(),
               createdAt: DateTime.now(),
