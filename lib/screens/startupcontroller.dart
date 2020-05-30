@@ -43,7 +43,7 @@ class _StartupControllerState extends State<StartupController> {
                 ),
               );
             } else {
-              renderer = TabNavigator(
+              renderer = Home(
                 navigatorKey: homeScreenNavigationKey,
               );
             }

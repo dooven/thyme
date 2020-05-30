@@ -114,7 +114,7 @@ class _PlantModifyState extends State<PlantModify> {
       if (_plantAddBloc.isEditing) {
         Navigator.pop(context, true);
       } else {
-        Navigator.of(context).pushReplacementNamed(TabNavigatorRoutes.plantInfo,
+        Navigator.of(context).pushReplacementNamed(HomeRoutes.plantInfo,
             arguments: PlantInfoScreenArguments(id: id));
       }
     });

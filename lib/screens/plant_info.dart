@@ -76,7 +76,7 @@ class _PlantInfoState extends State<PlantInfo> {
 
   void editPlant(Plant plant) {
     Navigator.of(context)
-        .pushNamed(TabNavigatorRoutes.plantModify,
+        .pushNamed(HomeRoutes.plantModify,
             arguments: PlantModifyScreenArgument(plantId: plant.id))
         .then((value) {
       if (value) {
