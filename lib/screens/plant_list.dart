@@ -68,27 +68,7 @@ class PlantList extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         heroTag: "add-fab",
-        onPressed: () async {
-          final nav = context.read<FlutterLocalNotificationsPlugin>();
-          // await nav.cancelAll();
-
-          var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-              'your channel id',
-              'your channel name',
-              'your channel description',
-              importance: Importance.Max,
-              priority: Priority.High,
-              ticker: 'ticker');
-          var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-          var platformChannelSpecifics = NotificationDetails(
-              androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-
-          await nav
-              .periodicallyShow(0, 'repeating title', 'repeating body',
-                  RepeatInterval.EveryMinute, platformChannelSpecifics)
-              .catchError((error) {
-            print(error);
-          });
+        onPressed: () {
           Navigator.of(context).pushNamed(TabNavigatorRoutes.plantModify);
         },
         tooltip: 'Increment',

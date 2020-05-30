@@ -1,4 +1,5 @@
 import 'package:boopplant/models/models.dart';
+import 'package:boopplant/repository/schedule.dart';
 import 'package:boopplant/widgets/schedule_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -7,17 +8,16 @@ class ScheduleList extends StatefulWidget {
   const ScheduleList({
     Key key,
     @required List<Schedule> schedule,
-    @required
-        Function(int id,
-                {List<int> byweekday, String name, TimeOfDay timeOfDay})
-            updateSchedule,
+    @required UpdateScheduleFn updateSchedule,
+    @required Function(int weekdayIdx, Schedule schedule) updateByweekday,
   })  : _schedule = schedule,
         _updateSchedule = updateSchedule,
+        _updateByweekday = updateByweekday,
         super(key: key);
 
   final List<Schedule> _schedule;
-  final Function(int id,
-      {List<int> byweekday, String name, TimeOfDay timeOfDay}) _updateSchedule;
+  final UpdateScheduleFn _updateSchedule;
+  final Function(int weekdayIdx, Schedule schedule) _updateByweekday;
 
   @override
   _ScheduleListState createState() => _ScheduleListState();
@@ -64,29 +64,29 @@ class _ScheduleListState extends State<ScheduleList> {
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (BuildContext context, int index) {
-            final e = widget._schedule[index];
+            final schedule = widget._schedule[index];
             return FutureBuilder(
-                key: Key(e.id.toString()),
-                future: individualScheduleFuture[e.id],
+                key: Key(schedule.id.toString()),
+                future: individualScheduleFuture[schedule.id],
                 builder: (context, snapshot) {
                   return ScheduleCard(
-                    schedule: e,
+                    schedule: schedule,
                     onTapScheduleNameEdit: () {
-                      _modifyScheduleName(e);
+                      _modifyScheduleName(schedule);
                     },
                     onTapScheduleTimeEdit: () async {
                       final response = await showTimePicker(
-                          context: context, initialTime: e.timeOfDay);
+                          context: context, initialTime: schedule.timeOfDay);
                       if (response == null) return;
                       setState(() {
-                        individualScheduleFuture[e.id] =
-                            widget._updateSchedule(e.id, timeOfDay: response);
+                        individualScheduleFuture[schedule.id] = widget
+                            ._updateSchedule(schedule.id, timeOfDay: response);
                       });
                     },
-                    saveByWeekDayCallback: (byweekDay) {
+                    saveByWeekDayCallback: (weekdayIdx) {
                       setState(() {
-                        individualScheduleFuture[e.id] =
-                            widget._updateSchedule(e.id, byweekday: byweekDay);
+                        individualScheduleFuture[schedule.id] =
+                            widget._updateByweekday(schedule.id, schedule);
                       });
                     },
                   );

@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 
 class ScheduleCard extends StatelessWidget {
   final Schedule schedule;
-  final Function(List<int> byweekDay) saveByWeekDayCallback;
+  final Function(int weekday) saveByWeekDayCallback;
   final Function() onTapScheduleNameEdit;
   final Function() onTapScheduleTimeEdit;
 
@@ -42,15 +42,7 @@ class ScheduleCard extends StatelessWidget {
                     : AppColors.disabledBackground,
                 child: InkWell(
                   onTap: saveByWeekDayCallback != null
-                      ? () {
-                          final scheduleSet = schedule.byweekday.toSet();
-                          if (scheduleSet.contains(index)) {
-                            scheduleSet.remove(index);
-                          } else {
-                            scheduleSet.add(index);
-                          }
-                          saveByWeekDayCallback(scheduleSet.toList());
-                        }
+                      ? () => saveByWeekDayCallback(index)
                       : null,
                   splashColor: Colors.white,
                   child: Container(

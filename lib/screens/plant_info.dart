@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:boopplant/models/models.dart';
+import 'package:boopplant/repository/notification.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
 import 'package:boopplant/screens/home.dart';
 import 'package:boopplant/screens/plant_modify.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sliver_fab/sliver_fab.dart';
@@ -47,11 +49,15 @@ class _PlantInfoState extends State<PlantInfo> {
     super.didChangeDependencies();
 
     final database = Provider.of<Database>(context, listen: false);
+    final notificationPlugin =
+        Provider.of<FlutterLocalNotificationsPlugin>(context, listen: false);
 
     final initialBloc = PlantInfoBloc(
-        plantId: widget.plantId,
-        plantRepository: PlantRepository(database: database),
-        scheduleRepository: ScheduleRepository(database: database));
+      plantId: widget.plantId,
+      plantRepository: PlantRepository(database: database),
+      scheduleRepository: ScheduleRepository(database: database),
+      notificationRepository: NotificationRepository(notificationPlugin),
+    );
 
     if (initialBloc != _plantInfoBloc) {
       _plantInfoBloc = initialBloc;
@@ -121,7 +127,7 @@ class _PlantInfoState extends State<PlantInfo> {
     setState(() {
       initialScheduleFuture = _plantInfoBloc.scheduleRepository
           .insert(Schedule(
-              byweekday: [],
+              byweekday: {},
               name: 'New Schedule',
               timeOfDay: TimeOfDay.now(),
               createdAt: DateTime.now(),
@@ -209,6 +215,7 @@ class _PlantInfoState extends State<PlantInfo> {
               ScheduleList(
                 schedule: _plantInfoBloc.schedule,
                 updateSchedule: _plantInfoBloc.updateSchedule,
+                updateByweekday: _plantInfoBloc.updateByWeekday,
               ),
             ],
           );
@@ -221,12 +228,17 @@ class _PlantInfoState extends State<PlantInfo> {
 class PlantInfoBloc {
   final PlantRepository plantRepository;
   final ScheduleRepository scheduleRepository;
+  final NotificationRepository notificationRepository;
   final int plantId;
 
   final _plantController = BehaviorSubject<Plant>();
   final _scheduleController = BehaviorSubject<List<Schedule>>();
 
-  PlantInfoBloc({this.plantRepository, this.scheduleRepository, this.plantId});
+  PlantInfoBloc(
+      {this.plantRepository,
+      this.scheduleRepository,
+      this.plantId,
+      this.notificationRepository});
 
   Stream<Plant> get plantStream => _plantController.stream;
 
@@ -260,8 +272,22 @@ class PlantInfoBloc {
             ));
   }
 
+  Future<void> updateByWeekday(int weekdayIdx, Schedule schedule) {
+    final newByweekday = schedule.byweekday;
+    if (schedule.byweekday.contains(weekdayIdx)) {
+      newByweekday.remove(weekdayIdx);
+      notificationRepository.cancel(weekdayIdx);
+    } else {
+      newByweekday.add(weekdayIdx);
+      notificationRepository.periodicallyShow((schedule.id * 10) + weekdayIdx,
+          "Water your plants!", "Water ${plant.name}", RepeatInterval.Weekly);
+    }
+
+    return updateSchedule(weekdayIdx, byweekday: newByweekday);
+  }
+
   Future<void> updateSchedule(int scheduleId,
-      {List<int> byweekday, String name, TimeOfDay timeOfDay}) {
+      {Set<int> byweekday, String name, TimeOfDay timeOfDay}) {
     return scheduleRepository
         .update(scheduleId,
             byweekday: byweekday, name: name, timeOfDay: timeOfDay)
