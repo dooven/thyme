@@ -61,4 +61,11 @@ class ScheduleRepository {
       where: 'id = $id',
     );
   }
+
+  Future<List<Schedule>> getByDay(int weekdayIdx) {
+    return database.query(LocalDatabase.scheduleTableName).then((value) => value
+        .map((e) => Schedule.fromJson(e))
+        .where((element) => element.byweekday.contains(weekdayIdx))
+        .toList());
+  }
 }

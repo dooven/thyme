@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:boopplant/blocs/notification.dart';
 import 'package:boopplant/repository/plant.dart';
-import 'package:boopplant/screens/day_schedule_list.dart';
 import 'package:boopplant/screens/home_tab.dart';
 import 'package:boopplant/screens/screens.dart';
 import 'package:flutter/material.dart';
@@ -58,10 +57,14 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Provider<PlantListBloc>(
-      create: (_) => PlantListBloc(
-          PlantRepository(database: Provider.of<Database>(context))),
-      dispose: (context, value) => value.dispose(),
+    final database = Provider.of<Database>(context);
+    return MultiProvider(
+      providers: [
+        Provider<PlantListBloc>(
+          create: (_) => PlantListBloc(PlantRepository(database: database)),
+          dispose: (context, value) => value.dispose(),
+        ),
+      ],
       child: WillPopScope(
         onWillPop: () async =>
             !await widget.navigatorKey.currentState.maybePop(),
