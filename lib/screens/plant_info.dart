@@ -214,7 +214,7 @@ class _PlantInfoState extends State<PlantInfo> {
               ),
               ScheduleList(
                 schedule: _plantInfoBloc.schedule,
-                updateSchedule: _plantInfoBloc.updateSchedule,
+                updateTime: _plantInfoBloc.updateTime,
                 updateByweekday: _plantInfoBloc.updateByWeekday,
               ),
             ],
@@ -272,6 +272,24 @@ class PlantInfoBloc {
             ));
   }
 
+  Future<void> updateTime(TimeOfDay timeOfDay, Schedule schedule) async {
+    Future.wait(schedule.byweekday
+        .map((weekdayIdx) => (schedule.id * 10) + weekdayIdx)
+        .map(notificationRepository.cancel)
+        .toList());
+
+    Future.wait(schedule.byweekday
+        .map((weekdayIdx) => notificationRepository.showWeeklyAtDayAndTime(
+            (schedule.id * 10) + weekdayIdx,
+            "Water your plants!",
+            "Water ${plant.name}",
+            Day.values[weekdayIdx],
+            Time(timeOfDay.hour, timeOfDay.minute)))
+        .toList());
+
+    return updateSchedule(schedule.id, timeOfDay: timeOfDay);
+  }
+
   Future<void> updateByWeekday(int weekdayIdx, Schedule schedule) {
     final newByweekday = schedule.byweekday;
     if (schedule.byweekday.contains(weekdayIdx)) {
@@ -279,11 +297,15 @@ class PlantInfoBloc {
       notificationRepository.cancel(weekdayIdx);
     } else {
       newByweekday.add(weekdayIdx);
-      notificationRepository.periodicallyShow((schedule.id * 10) + weekdayIdx,
-          "Water your plants!", "Water ${plant.name}", RepeatInterval.Weekly);
+      notificationRepository.showWeeklyAtDayAndTime(
+          (schedule.id * 10) + weekdayIdx,
+          "Water your plants!",
+          "Water ${plant.name}",
+          Day.values[weekdayIdx],
+          Time(schedule.timeOfDay.hour, schedule.timeOfDay.minute));
     }
 
-    return updateSchedule(weekdayIdx, byweekday: newByweekday);
+    return updateSchedule(schedule.id, byweekday: newByweekday);
   }
 
   Future<void> updateSchedule(int scheduleId,

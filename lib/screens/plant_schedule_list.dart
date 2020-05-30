@@ -1,5 +1,4 @@
 import 'package:boopplant/models/models.dart';
-import 'package:boopplant/repository/schedule.dart';
 import 'package:boopplant/widgets/schedule_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -8,15 +7,15 @@ class ScheduleList extends StatefulWidget {
   const ScheduleList({
     Key key,
     @required List<Schedule> schedule,
-    @required UpdateScheduleFn updateSchedule,
+    @required Function(TimeOfDay timeOfDay, Schedule schedule) updateTime,
     @required Function(int weekdayIdx, Schedule schedule) updateByweekday,
   })  : _schedule = schedule,
-        _updateSchedule = updateSchedule,
+        _updateTime = updateTime,
         _updateByweekday = updateByweekday,
         super(key: key);
 
   final List<Schedule> _schedule;
-  final UpdateScheduleFn _updateSchedule;
+  final Function(TimeOfDay timeOfDay, Schedule schedule) _updateTime;
   final Function(int weekdayIdx, Schedule schedule) _updateByweekday;
 
   @override
@@ -39,9 +38,9 @@ class _ScheduleListState extends State<ScheduleList> {
                 onPressed: textController.text.isNotEmpty
                     ? () {
                         setState(() {
-                          individualScheduleFuture[schedule.id] =
-                              widget._updateSchedule(schedule.id,
-                                  name: textController.text);
+                          // individualScheduleFuture[schedule.id] =
+                          //     widget._updateSchedule(schedule.id,
+                          //         name: textController.text);
                         });
                         Navigator.of(context).pop();
                       }
@@ -69,6 +68,11 @@ class _ScheduleListState extends State<ScheduleList> {
                 key: Key(schedule.id.toString()),
                 future: individualScheduleFuture[schedule.id],
                 builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    Scaffold.of(context)
+                        .showSnackBar(SnackBar(content: Text("ERROR")));
+                  }
+
                   return ScheduleCard(
                     schedule: schedule,
                     onTapScheduleNameEdit: () {
@@ -79,8 +83,8 @@ class _ScheduleListState extends State<ScheduleList> {
                           context: context, initialTime: schedule.timeOfDay);
                       if (response == null) return;
                       setState(() {
-                        individualScheduleFuture[schedule.id] = widget
-                            ._updateSchedule(schedule.id, timeOfDay: response);
+                        individualScheduleFuture[schedule.id] =
+                            widget._updateTime(response, schedule);
                       });
                     },
                     saveByWeekDayCallback: (weekdayIdx) {

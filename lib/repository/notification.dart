@@ -5,8 +5,13 @@ class NotificationRepository {
 
   NotificationRepository(this._flutterLocalNotificationsPlugin);
 
-  Future<void> periodicallyShow(
-      int id, String title, String body, RepeatInterval repeatInterval) {
+  Future<void> showWeeklyAtDayAndTime(
+    int id,
+    String title,
+    String body,
+    Day day,
+    Time notificationTime,
+  ) {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'weekly-notification',
         'Plants Weekly Notification',
@@ -17,8 +22,14 @@ class NotificationRepository {
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
 
-    return _flutterLocalNotificationsPlugin.periodicallyShow(
-        id, title, body, repeatInterval, platformChannelSpecifics);
+    return _flutterLocalNotificationsPlugin.showWeeklyAtDayAndTime(
+      id,
+      title,
+      body,
+      day,
+      notificationTime,
+      platformChannelSpecifics,
+    );
   }
 
   Future<void> cancel(int id) {
