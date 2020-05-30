@@ -86,7 +86,7 @@ class _ScheduleListState extends State<ScheduleList> {
                     saveByWeekDayCallback: (weekdayIdx) {
                       setState(() {
                         individualScheduleFuture[schedule.id] =
-                            widget._updateByweekday(schedule.id, schedule);
+                            widget._updateByweekday(weekdayIdx, schedule);
                       });
                     },
                   );
