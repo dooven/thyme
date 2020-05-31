@@ -61,15 +61,17 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final database = Provider.of<Database>(context);
+    final plantRepository = PlantRepository(database: database);
+    final scheduleRepository = ScheduleRepository(database: database);
     return MultiProvider(
       providers: [
         Provider<PlantListBloc>(
-          create: (_) => PlantListBloc(PlantRepository(database: database)),
+          create: (_) => PlantListBloc(plantRepository),
           dispose: (context, value) => value.dispose(),
         ),
         Provider<DayScheduleListBloc>(
           create: (_) =>
-              DayScheduleListBloc(ScheduleRepository(database: database)),
+              DayScheduleListBloc(scheduleRepository, plantRepository),
           dispose: (context, value) => value.dispose(),
         )
       ],
