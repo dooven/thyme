@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:boopplant/blocs/notification.dart';
 import 'package:boopplant/repository/plant.dart';
+import 'package:boopplant/repository/schedule.dart';
+import 'package:boopplant/screens/day_schedule_list.dart';
 import 'package:boopplant/screens/home_tab.dart';
+import 'package:boopplant/screens/plant_schedule_list.dart';
 import 'package:boopplant/screens/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -64,6 +67,11 @@ class _HomeState extends State<Home> {
           create: (_) => PlantListBloc(PlantRepository(database: database)),
           dispose: (context, value) => value.dispose(),
         ),
+        Provider<DayScheduleListBloc>(
+          create: (_) =>
+              DayScheduleListBloc(ScheduleRepository(database: database)),
+          dispose: (context, value) => value.dispose(),
+        )
       ],
       child: WillPopScope(
         onWillPop: () async =>
