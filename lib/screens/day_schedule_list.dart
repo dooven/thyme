@@ -1,6 +1,9 @@
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
+import 'package:boopplant/screens/home.dart';
+import 'package:boopplant/screens/plant_info.dart';
+import 'package:boopplant/widgets/plant_circle_avatar.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,16 +22,22 @@ class DayScheduleList extends StatelessWidget {
             style: Theme.of(context).textTheme.headline6,
           ),
         ),
-        for (var schedule in scheduleMap[element])
-          ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Colors.greenAccent,
+        ...scheduleMap[element].map((schedule) {
+          final plantItem = plantMap[schedule.plantId];
+          final timeOfDay = schedule.timeOfDay;
+
+          return ListTile(
+            leading: PlantCircleAvatar(
+              imageUrl: plantItem.imageUrl,
             ),
-            title: Text(plantMap[schedule.plantId].name),
-            trailing: Text(
-              "${schedule.timeOfDay.hour}:${schedule.timeOfDay.minute}",
-            ),
-          )
+            title: Text(plantItem.name),
+            trailing: Text("${timeOfDay.hour}:${timeOfDay.minute}"),
+            onTap: () {
+              Navigator.of(context).pushNamed(HomeRoutes.plantInfo,
+                  arguments: PlantInfoScreenArguments(id: plantItem.id));
+            },
+          );
+        }),
       ];
     }).toList();
   }
@@ -59,15 +68,13 @@ class DayScheduleList extends StatelessWidget {
 class DayScheduleListBloc {
   final _scheduleController = BehaviorSubject<List<Schedule>>();
   final _plantsController = BehaviorSubject<List<Plant>>();
-  final _scheduleFetch = BehaviorSubject<bool>.seeded(true);
-  final _plantListFetch = BehaviorSubject<bool>.seeded(true);
+  final _fetchController = BehaviorSubject<bool>.seeded(true);
 
   final ScheduleRepository _scheduleRepository;
   final PlantRepository _plantRepository;
 
-  Sink<bool> get scheduleFetchSink => _scheduleFetch.sink;
-  Stream<bool> get scheduleFetchStream => _scheduleFetch.stream;
-  Stream<bool> get plantFetchStream => _plantListFetch.stream;
+  Sink<bool> get fetchControllerSink => _fetchController.sink;
+  Stream<bool> get fetchStream => _fetchController.stream;
   Stream<List<Schedule>> get scheduleStream => _scheduleController.stream;
   Map<int, List<Schedule>> get scheduleByTime => groupBy(
         _scheduleController.value,
@@ -76,14 +83,13 @@ class DayScheduleListBloc {
   Map<int, Plant> get plantById =>
       {for (final v in _plantsController.value) v.id: v};
 
-  Stream<void> get scheduleListFetcher =>
-      scheduleFetchStream.asyncMap((event) => this
-          ._scheduleRepository
-          .getByDay(DateTime.now().weekday - 1)
-          .then(_scheduleController.add));
+  Stream<void> get scheduleListFetcher => fetchStream.asyncMap((event) => this
+      ._scheduleRepository
+      .getByDay(DateTime.now().weekday - 1)
+      .then(_scheduleController.add));
 
   Stream<void> get plantListFetcher => Rx.combineLatest2(
-      plantFetchStream,
+      fetchStream,
       scheduleStream,
       (_, List<Schedule> schedules) =>
           schedules.map((s) => s.plantId).toList()).asyncMap(
@@ -96,8 +102,7 @@ class DayScheduleListBloc {
 
   void dispose() {
     _scheduleController.close();
-    _scheduleFetch.close();
+    _fetchController.close();
     _plantsController.close();
-    _plantListFetch.close();
   }
 }

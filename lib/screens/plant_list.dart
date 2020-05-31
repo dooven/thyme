@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/plant_info.dart';
+import 'package:boopplant/widgets/plant_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -10,21 +11,10 @@ import 'package:rxdart/rxdart.dart';
 
 class PlantList extends StatelessWidget {
   buildListItem(Plant plant) {
-    final hasImageURL = plant.imageUrl != null;
     return Builder(
       builder: (context) {
         return ListTile(
-          leading: CircleAvatar(
-            child: !hasImageURL
-                ? Text(
-                    plant.name.substring(0, 1),
-                    style: TextStyle(color: Colors.white),
-                  )
-                : null,
-            backgroundColor: Theme.of(context).backgroundColor,
-            backgroundImage:
-                hasImageURL ? FileImage(File(plant.imageUrl)) : null,
-          ),
+          leading: PlantCircleAvatar(imageUrl: plant.imageUrl),
           title: Text(plant.name),
           onTap: () {
             Navigator.of(context).pushNamed('/plant/info',
