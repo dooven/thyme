@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:boopplant/blocs/global_refresh_bloc.dart';
 import 'package:boopplant/blocs/notification.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
@@ -37,7 +38,6 @@ class _HomeState extends State<Home> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final _notificationBloc = context.read<NotificationBloc>();
-
     if (notificationBloc != _notificationBloc) {
       notificationSub?.cancel();
       notificationBloc = _notificationBloc;
@@ -65,15 +65,22 @@ class _HomeState extends State<Home> {
     final scheduleRepository = ScheduleRepository(database: database);
     return MultiProvider(
       providers: [
-        Provider<PlantListBloc>(
-          create: (_) => PlantListBloc(plantRepository),
+        Provider<GlobalRefreshBloc>(
+          create: (_) => GlobalRefreshBloc(),
           dispose: (context, value) => value.dispose(),
         ),
-        Provider<DayScheduleListBloc>(
-          create: (_) =>
-              DayScheduleListBloc(scheduleRepository, plantRepository),
-          dispose: (context, value) => value.dispose(),
-        )
+        ProxyProvider<GlobalRefreshBloc, PlantListBloc>(
+            create: (_) => PlantListBloc(plantRepository),
+            dispose: (context, value) => value.dispose(),
+            update: (context, globalRefreshBloc, plantListBloc) => plantListBloc
+              ..globalRefreshStream = globalRefreshBloc.refreshStream),
+        ProxyProvider<GlobalRefreshBloc, DayScheduleListBloc>(
+            create: (_) =>
+                DayScheduleListBloc(scheduleRepository, plantRepository),
+            dispose: (context, value) => value.dispose(),
+            update: (context, globalRefreshBloc, dayScheduleListBloc) =>
+                dayScheduleListBloc
+                  ..globalRefreshStream = globalRefreshBloc.refreshStream)
       ],
       child: WillPopScope(
         onWillPop: () async =>

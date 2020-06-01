@@ -50,16 +50,13 @@ class PlantList extends StatelessWidget {
 
 class PlantListBloc {
   final _allPlantsFetchController = BehaviorSubject<bool>.seeded(true);
-  final _singlePlantFetchController = BehaviorSubject<int>();
   final _plantListController = BehaviorSubject<List<Plant>>();
 
+  Stream<bool> globalRefreshStream;
   final PlantRepository _plantRepository;
 
-  Stream<bool> get plantListFetchStream => _allPlantsFetchController.stream;
 
-  Function(bool) get plantListFetchSink => _allPlantsFetchController.sink.add;
-
-  Stream<void> get plantListFetcher => plantListFetchStream
+  Stream<void> get plantListFetcher => globalRefreshStream
       .asyncMap((event) => this._plantRepository.list())
       .doOnData(_plantListController.add);
 
@@ -70,6 +67,5 @@ class PlantListBloc {
   void dispose() {
     _allPlantsFetchController.close();
     _plantListController.close();
-    _singlePlantFetchController.close();
   }
 }

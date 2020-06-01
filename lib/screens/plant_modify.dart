@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:boopplant/blocs/global_refresh_bloc.dart';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/home.dart';
@@ -105,12 +106,7 @@ class _PlantModifyState extends State<PlantModify> {
 
   void onSubmit() {
     _plantAddBloc.save().then((id) {
-      /**
-       * [#5](https://github.com/dooven/boopplant/issues/5)
-       * This triggers a fetch of ALL plants. This might cause some perf issues sometime
-       * but can work for now
-       */
-      _plantListBloc.plantListFetchSink(true);
+      context.read<GlobalRefreshBloc>().refreshSink(true);
       if (_plantAddBloc.isEditing) {
         Navigator.pop(context, true);
       } else {

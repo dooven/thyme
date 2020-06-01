@@ -18,7 +18,7 @@ class DayScheduleList extends StatelessWidget {
       return [
         ListTile(
           title: Text(
-            "$element:00",
+            TimeOfDay(hour: element, minute: 0).format(context),
             style: Theme.of(context).textTheme.headline6,
           ),
         ),
@@ -31,7 +31,8 @@ class DayScheduleList extends StatelessWidget {
               imageUrl: plantItem.imageUrl,
             ),
             title: Text(plantItem.name),
-            trailing: Text("${timeOfDay.hour}:${timeOfDay.minute}"),
+            subtitle: Text(schedule.name),
+            trailing: Text(timeOfDay.format(context)),
             onTap: () {
               Navigator.of(context).pushNamed(HomeRoutes.plantInfo,
                   arguments: PlantInfoScreenArguments(id: plantItem.id));
@@ -55,11 +56,40 @@ class DayScheduleList extends StatelessWidget {
         final listWidgets = buildList(
             context, dayScheduleBloc.scheduleByTime, dayScheduleBloc.plantById);
 
-        return ListView.builder(
-            itemBuilder: (context, index) {
-              return listWidgets[index];
-            },
-            itemCount: listWidgets.length);
+        return Column(
+          children: [
+            Container(
+              margin: EdgeInsets.all(8),
+              padding: EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+              ),
+              child: Flex(
+                direction: Axis.horizontal,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text("Today's Schedule",
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline6
+                          .copyWith(color: Colors.black54))
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                  itemBuilder: (context, index) {
+                    return listWidgets[index];
+                  },
+                  itemCount: listWidgets.length),
+            ),
+          ],
+        );
       },
     );
   }
@@ -70,11 +100,15 @@ class DayScheduleListBloc {
   final _plantsController = BehaviorSubject<List<Plant>>();
   final _fetchController = BehaviorSubject<bool>.seeded(true);
 
+  Stream<bool> globalRefreshStream;
+
   final ScheduleRepository _scheduleRepository;
   final PlantRepository _plantRepository;
 
   Sink<bool> get fetchControllerSink => _fetchController.sink;
   Stream<bool> get fetchStream => _fetchController.stream;
+  Stream<bool> get fetchStreamWithGlobal =>
+      Rx.combineLatest2(fetchStream, globalRefreshStream, (_, __) => true);
   Stream<List<Schedule>> get scheduleStream => _scheduleController.stream;
   Map<int, List<Schedule>> get scheduleByTime => groupBy(
         _scheduleController.value,
@@ -83,13 +117,14 @@ class DayScheduleListBloc {
   Map<int, Plant> get plantById =>
       {for (final v in _plantsController.value) v.id: v};
 
-  Stream<void> get scheduleListFetcher => fetchStream.asyncMap((event) => this
-      ._scheduleRepository
-      .getByDay(DateTime.now().weekday - 1)
-      .then(_scheduleController.add));
+  Stream<void> get scheduleListFetcher =>
+      fetchStreamWithGlobal.asyncMap((event) => this
+          ._scheduleRepository
+          .getByDay(DateTime.now().weekday % 7)
+          .then(_scheduleController.add));
 
   Stream<void> get plantListFetcher => Rx.combineLatest2(
-      fetchStream,
+      fetchStreamWithGlobal,
       scheduleStream,
       (_, List<Schedule> schedules) =>
           schedules.map((s) => s.plantId).toList()).asyncMap(

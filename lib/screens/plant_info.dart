@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:boopplant/blocs/global_refresh_bloc.dart';
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/notification.dart';
 import 'package:boopplant/repository/plant.dart';
@@ -33,6 +34,7 @@ class PlantInfo extends StatefulWidget {
 
 class _PlantInfoState extends State<PlantInfo> {
   PlantInfoBloc _plantInfoBloc;
+  GlobalRefreshBloc _globalRefreshBloc;
   Stream<bool> _isScreenReady;
   Future initialScheduleFuture;
   ScrollController _controller = ScrollController();
@@ -52,11 +54,14 @@ class _PlantInfoState extends State<PlantInfo> {
     final notificationPlugin =
         Provider.of<FlutterLocalNotificationsPlugin>(context, listen: false);
 
+    _globalRefreshBloc = Provider.of<GlobalRefreshBloc>(context, listen: false);
+
     final initialBloc = PlantInfoBloc(
       plantId: widget.plantId,
       plantRepository: PlantRepository(database: database),
       scheduleRepository: ScheduleRepository(database: database),
       notificationRepository: NotificationRepository(notificationPlugin),
+      globalRefreshSink: _globalRefreshBloc.refreshSink,
     );
 
     if (initialBloc != _plantInfoBloc) {
@@ -133,6 +138,7 @@ class _PlantInfoState extends State<PlantInfo> {
               createdAt: DateTime.now(),
               plantId: widget.plantId))
           .then((_) => _plantInfoBloc.getSchedulesByPlantId())
+          .then((value) => _globalRefreshBloc.refreshSink(true))
           .then(
             (value) => _controller.animateTo(
               _controller.position.maxScrollExtent,
@@ -216,6 +222,9 @@ class _PlantInfoState extends State<PlantInfo> {
                 schedule: _plantInfoBloc.schedule,
                 updateTime: _plantInfoBloc.updateTime,
                 updateByweekday: _plantInfoBloc.updateByWeekday,
+                updateName: (name, scheduleId) {
+                  return _plantInfoBloc.updateSchedule(scheduleId, name: name);
+                },
               ),
             ],
           );
@@ -229,16 +238,19 @@ class PlantInfoBloc {
   final PlantRepository plantRepository;
   final ScheduleRepository scheduleRepository;
   final NotificationRepository notificationRepository;
+  final Function(bool) globalRefreshSink;
   final int plantId;
 
   final _plantController = BehaviorSubject<Plant>();
   final _scheduleController = BehaviorSubject<List<Schedule>>();
 
-  PlantInfoBloc(
-      {this.plantRepository,
-      this.scheduleRepository,
-      this.plantId,
-      this.notificationRepository});
+  PlantInfoBloc({
+    this.plantRepository,
+    this.scheduleRepository,
+    this.plantId,
+    this.notificationRepository,
+    this.globalRefreshSink,
+  });
 
   Stream<Plant> get plantStream => _plantController.stream;
 
@@ -315,7 +327,8 @@ class PlantInfoBloc {
             byweekday: byweekday, name: name, timeOfDay: timeOfDay)
         .then((_) => scheduleRepository.getById(scheduleId))
         .then((value) => _scheduleController
-            .add(schedule.map((e) => e.id == value.id ? value : e).toList()));
+            .add(schedule.map((e) => e.id == value.id ? value : e).toList()))
+        .then((value) => globalRefreshSink(true));
   }
 
   void dispose() {
