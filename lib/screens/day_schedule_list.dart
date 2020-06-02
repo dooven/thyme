@@ -21,6 +21,9 @@ class DayScheduleList extends StatelessWidget {
     final sortedKey = scheduleMap.keys.toList()..sort();
 
     return sortedKey.expand((element) {
+      final schedules = scheduleMap[element]
+        ..sort(
+            (a, b) => a.timeOfDay.toString().compareTo(b.timeOfDay.toString()));
       return [
         ListTile(
           title: Text(
@@ -28,7 +31,7 @@ class DayScheduleList extends StatelessWidget {
             style: Theme.of(context).textTheme.headline6,
           ),
         ),
-        ...scheduleMap[element].map((schedule) {
+        ...schedules.map((schedule) {
           final plantItem = plantMap[schedule.plantId];
           final timeOfDay = schedule.timeOfDay;
 
@@ -66,7 +69,7 @@ class DayScheduleList extends StatelessWidget {
         return Column(
           children: [
             Container(
-              margin: EdgeInsets.all(8),
+              margin: EdgeInsets.only(top: 4, left: 8, right: 8),
               padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
@@ -81,10 +84,7 @@ class DayScheduleList extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text("Today's Schedule",
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6
-                          .copyWith(color: Colors.black54))
+                      style: Theme.of(context).textTheme.headline6)
                 ],
               ),
             ),
