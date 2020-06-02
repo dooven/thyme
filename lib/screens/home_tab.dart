@@ -23,35 +23,40 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        children: _widgetOptions,
-        index: _selectedIndex,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        heroTag: "add-fab",
-        onPressed: () {
-          Navigator.of(context).pushNamed(HomeRoutes.plantModify);
-        },
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-        elevation: 2.0,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.schedule),
-            title: Text('Today'),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            title: Text('Plants'),
-          ),
-        ],
-        selectedItemColor: Theme.of(context).primaryColorDark,
+    return DefaultTabController(
+      length: _widgetOptions.length,
+      child: Scaffold(
+        body: TabBarView(
+          children: _widgetOptions,
+          // index: _selectedIndex,
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: FloatingActionButton(
+          heroTag: "add-fab",
+          onPressed: () {
+            Navigator.of(context).pushNamed(HomeRoutes.plantModify);
+          },
+          tooltip: 'Increment',
+          child: Icon(Icons.add),
+          elevation: 2.0,
+        ),
+        bottomNavigationBar: TabBar(
+          indicatorSize: TabBarIndicatorSize.label,
+          indicatorPadding: EdgeInsets.all(5.0),
+          indicatorColor: Theme.of(context).primaryColor,
+          onTap: _onItemTapped,
+          tabs: [
+            Tab(
+              icon: Icon(Icons.schedule),
+              text: 'Today',
+            ),
+            Tab(
+              icon: Icon(Icons.list),
+              text: 'Plants',
+            ),
+          ],
+          // selectedItemColor: Theme.of(context).primaryColorDark,
+        ),
       ),
     );
   }

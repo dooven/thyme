@@ -9,7 +9,15 @@ import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 
-class PlantList extends StatelessWidget {
+class PlantList extends StatefulWidget {
+  @override
+  _PlantListState createState() => _PlantListState();
+}
+
+class _PlantListState extends State<PlantList> {
+  PlantListBloc _plantListBloc;
+  Stream fetcher;
+
   buildListItem(Plant plant) {
     return Builder(
       builder: (context) {
@@ -26,11 +34,16 @@ class PlantList extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final plantListBloc = Provider.of<PlantListBloc>(context);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _plantListBloc = Provider.of<PlantListBloc>(context);
+    fetcher = _plantListBloc.plantListFetcher;
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<List<Plant>>(
-      stream: plantListBloc.plantListFetcher,
+      stream: _plantListBloc.plantListFetcher,
       builder: (context, snapshot) {
         print(snapshot.connectionState);
         if (!snapshot.hasData) {
@@ -38,9 +51,9 @@ class PlantList extends StatelessWidget {
         }
 
         return ListView.builder(
-          itemCount: plantListBloc.plantList.length,
+          itemCount: _plantListBloc.plantList.length,
           itemBuilder: (context, index) {
-            return buildListItem(plantListBloc.plantList[index]);
+            return buildListItem(_plantListBloc.plantList[index]);
           },
         );
       },
@@ -55,8 +68,8 @@ class PlantListBloc {
   Stream<bool> globalRefreshStream;
   final PlantRepository _plantRepository;
 
-
   Stream<void> get plantListFetcher => globalRefreshStream
+      .startWith(true)
       .asyncMap((event) => this._plantRepository.list())
       .doOnData(_plantListController.add);
 

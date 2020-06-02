@@ -12,6 +12,9 @@ import 'package:rxdart/rxdart.dart';
 class DayScheduleList extends StatelessWidget {
   List<Widget> buildList(BuildContext context,
       Map<int, List<Schedule>> scheduleMap, Map<int, Plant> plantMap) {
+    if (plantMap.isEmpty) {
+      return [];
+    }
     final sortedKey = scheduleMap.keys.toList()..sort();
 
     return sortedKey.expand((element) {
@@ -96,8 +99,8 @@ class DayScheduleList extends StatelessWidget {
 }
 
 class DayScheduleListBloc {
-  final _scheduleController = BehaviorSubject<List<Schedule>>();
-  final _plantsController = BehaviorSubject<List<Plant>>();
+  final _scheduleController = BehaviorSubject<List<Schedule>>.seeded([]);
+  final _plantsController = BehaviorSubject<List<Plant>>.seeded([]);
   final _fetchController = BehaviorSubject<bool>.seeded(true);
 
   Stream<bool> globalRefreshStream;
@@ -107,21 +110,24 @@ class DayScheduleListBloc {
 
   Sink<bool> get fetchControllerSink => _fetchController.sink;
   Stream<bool> get fetchStream => _fetchController.stream;
-  Stream<bool> get fetchStreamWithGlobal =>
-      Rx.combineLatest2(fetchStream, globalRefreshStream, (_, __) => true);
   Stream<List<Schedule>> get scheduleStream => _scheduleController.stream;
+  Stream<bool> get fetchStreamWithGlobal => Rx.combineLatest2(
+        fetchStream,
+        globalRefreshStream,
+        (_, __) => true,
+      ).startWith(true);
+  Stream<void> get scheduleListFetcher =>
+      fetchStreamWithGlobal.asyncMap((event) => this
+          ._scheduleRepository
+          .getByDay(DateTime.now().weekday % 7)
+          .then(_scheduleController.add));
+
   Map<int, List<Schedule>> get scheduleByTime => groupBy(
         _scheduleController.value,
         (Schedule element) => element.timeOfDay.hour,
       );
   Map<int, Plant> get plantById =>
       {for (final v in _plantsController.value) v.id: v};
-
-  Stream<void> get scheduleListFetcher =>
-      fetchStreamWithGlobal.asyncMap((event) => this
-          ._scheduleRepository
-          .getByDay(DateTime.now().weekday % 7)
-          .then(_scheduleController.add));
 
   Stream<void> get plantListFetcher => Rx.combineLatest2(
       fetchStreamWithGlobal,
