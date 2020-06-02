@@ -1,30 +1,28 @@
 import 'dart:io';
 
 import 'package:boopplant/models/models.dart';
+import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/plant_info.dart';
+import 'package:boopplant/widgets/plant_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:rxdart/rxdart.dart';
 
-import 'home.dart';
+class PlantList extends StatefulWidget {
+  @override
+  _PlantListState createState() => _PlantListState();
+}
 
-class PlantList extends StatelessWidget {
+class _PlantListState extends State<PlantList> {
+  PlantListBloc _plantListBloc;
+  Stream fetcher;
+
   buildListItem(Plant plant) {
-    final hasImageURL = plant.imageUrl != null;
     return Builder(
       builder: (context) {
         return ListTile(
-          leading: CircleAvatar(
-            child: !hasImageURL
-                ? Text(
-                    plant.name.substring(0, 1),
-                    style: TextStyle(color: Colors.white),
-                  )
-                : null,
-            backgroundColor: Theme.of(context).backgroundColor,
-            backgroundImage:
-                hasImageURL ? FileImage(File(plant.imageUrl)) : null,
-          ),
+          leading: PlantCircleAvatar(imageUrl: plant.imageUrl),
           title: Text(plant.name),
           onTap: () {
             Navigator.of(context).pushNamed('/plant/info',
@@ -36,51 +34,51 @@ class PlantList extends StatelessWidget {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _plantListBloc = Provider.of<PlantListBloc>(context);
+    fetcher = _plantListBloc.plantListFetcher;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final plantListBloc = Provider.of<PlantListBloc>(context);
+    return StreamBuilder<List<Plant>>(
+      stream: _plantListBloc.plantListFetcher,
+      builder: (context, snapshot) {
+        print(snapshot.connectionState);
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-    plantListBloc.plantListFetchSink(true);
-
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: StreamBuilder<List<Plant>>(
-              stream: plantListBloc.plantListFetcher,
-              builder: (context, snapshot) {
-                print(snapshot.connectionState);
-                if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
-                return ListView.builder(
-                  itemCount: plantListBloc.plantList.length,
-                  itemBuilder: (context, index) {
-                    return buildListItem(plantListBloc.plantList[index]);
-                  },
-                );
-              },
-            ),
-          )
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        heroTag: "add-fab",
-        onPressed: () =>
-            Navigator.of(context).pushNamed(TabNavigatorRoutes.plantModify),
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-        elevation: 2.0,
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [Container(height: 50)]),
-        shape: CircularNotchedRectangle(),
-        color: Theme.of(context).backgroundColor,
-      ),
+        return ListView.builder(
+          itemCount: _plantListBloc.plantList.length,
+          itemBuilder: (context, index) {
+            return buildListItem(_plantListBloc.plantList[index]);
+          },
+        );
+      },
     );
+  }
+}
+
+class PlantListBloc {
+  final _allPlantsFetchController = BehaviorSubject<bool>.seeded(true);
+  final _plantListController = BehaviorSubject<List<Plant>>();
+
+  Stream<bool> globalRefreshStream;
+  final PlantRepository _plantRepository;
+
+  Stream<void> get plantListFetcher => globalRefreshStream
+      .startWith(true)
+      .asyncMap((event) => this._plantRepository.list())
+      .doOnData(_plantListController.add);
+
+  List<Plant> get plantList => _plantListController.value;
+
+  PlantListBloc(this._plantRepository);
+
+  void dispose() {
+    _allPlantsFetchController.close();
+    _plantListController.close();
   }
 }

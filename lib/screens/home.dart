@@ -1,57 +1,106 @@
-import 'package:boopplant/models/models.dart';
+import 'dart:async';
+
+import 'package:boopplant/blocs/global_refresh_bloc.dart';
+import 'package:boopplant/blocs/notification.dart';
 import 'package:boopplant/repository/plant.dart';
+import 'package:boopplant/repository/schedule.dart';
+import 'package:boopplant/screens/day_schedule_list.dart';
+import 'package:boopplant/screens/home_tab.dart';
+import 'package:boopplant/screens/plant_schedule_list.dart';
 import 'package:boopplant/screens/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:sqflite/sqflite.dart';
 
-class TabNavigatorRoutes {
-  static const String plantList = '/';
+class HomeRoutes {
+  static const String scheduleList = '/';
+  static const String plantList = '/plant/list';
   static const String plantInfo = '/plant/info';
   static const String plantModify = '/plant/modify';
 }
 
-class TabNavigator extends StatefulWidget {
-  TabNavigator({this.navigatorKey});
+class Home extends StatefulWidget {
+  Home({this.navigatorKey});
 
   final GlobalKey<NavigatorState> navigatorKey;
 
   @override
-  _TabNavigatorState createState() => _TabNavigatorState();
+  _HomeState createState() => _HomeState();
 }
 
-class _TabNavigatorState extends State<TabNavigator> {
+class _HomeState extends State<Home> {
   Map<String, Widget> routeBuilders;
+  NotificationBloc notificationBloc;
+  StreamSubscription notificationSub;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final _notificationBloc = context.read<NotificationBloc>();
+    if (notificationBloc != _notificationBloc) {
+      notificationSub?.cancel();
+      notificationBloc = _notificationBloc;
+      notificationSub =
+          notificationBloc.notificationMessageStream.listen((event) {
+        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          widget.navigatorKey.currentState.pushNamed('/plant/info',
+              arguments: PlantInfoScreenArguments(id: 1));
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    notificationBloc?.dispose();
+    notificationSub?.cancel();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Provider<PlantListBloc>(
-      create: (_) => PlantListBloc(
-        PlantRepository(database: Provider.of<Database>(context)),
-      ),
-      dispose: (context, value) => value.dispose(),
+    final database = Provider.of<Database>(context);
+    final plantRepository = PlantRepository(database: database);
+    final scheduleRepository = ScheduleRepository(database: database);
+    return MultiProvider(
+      providers: [
+        Provider<GlobalRefreshBloc>(
+          create: (_) => GlobalRefreshBloc(),
+          dispose: (context, value) => value.dispose(),
+        ),
+        ProxyProvider<GlobalRefreshBloc, PlantListBloc>(
+            create: (_) => PlantListBloc(plantRepository),
+            dispose: (context, value) => value.dispose(),
+            update: (context, globalRefreshBloc, plantListBloc) => plantListBloc
+              ..globalRefreshStream = globalRefreshBloc.refreshStream),
+        ProxyProvider<GlobalRefreshBloc, DayScheduleListBloc>(
+            create: (_) =>
+                DayScheduleListBloc(scheduleRepository, plantRepository),
+            dispose: (context, value) => value.dispose(),
+            update: (context, globalRefreshBloc, dayScheduleListBloc) =>
+                dayScheduleListBloc
+                  ..globalRefreshStream = globalRefreshBloc.refreshStream)
+      ],
       child: WillPopScope(
         onWillPop: () async =>
             !await widget.navigatorKey.currentState.maybePop(),
         child: Navigator(
             key: widget.navigatorKey,
-            observers: [
-              HeroController(),
-            ],
+            observers: [HeroController()],
             onGenerateRoute: (routeSettings) {
               Widget widget;
               switch (routeSettings.name) {
-                case TabNavigatorRoutes.plantList:
-                  widget = PlantList();
+                case HomeRoutes.scheduleList:
+                case HomeRoutes.plantList:
+                  widget = HomeTab();
                   break;
-                case TabNavigatorRoutes.plantInfo:
+                case HomeRoutes.plantInfo:
                   final PlantInfoScreenArguments screenArguments =
                       routeSettings.arguments;
                   widget = PlantInfo(plantId: screenArguments.id);
                   break;
-                case TabNavigatorRoutes.plantModify:
+                case HomeRoutes.plantModify:
                   widget = PlantModify();
                   break;
               }
@@ -63,31 +112,5 @@ class _TabNavigatorState extends State<TabNavigator> {
             }),
       ),
     );
-  }
-}
-
-class PlantListBloc {
-  final _allPlantsFetchController = BehaviorSubject<bool>();
-  final _singlePlantFetchController = BehaviorSubject<int>();
-  final _plantListController = BehaviorSubject<List<Plant>>();
-
-  final PlantRepository _plantRepository;
-
-  Stream<bool> get plantListFetchStream => _allPlantsFetchController.stream;
-
-  Function(bool) get plantListFetchSink => _allPlantsFetchController.sink.add;
-
-  Stream<void> get plantListFetcher => plantListFetchStream
-      .asyncMap((event) => this._plantRepository.list())
-      .doOnData(_plantListController.add);
-
-  List<Plant> get plantList => _plantListController.value;
-
-  PlantListBloc(this._plantRepository);
-
-  void dispose() {
-    _allPlantsFetchController.close();
-    _plantListController.close();
-    _singlePlantFetchController.close();
   }
 }

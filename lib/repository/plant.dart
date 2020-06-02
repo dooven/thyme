@@ -50,6 +50,15 @@ class PlantRepository {
     );
   }
 
+  Future<List<Plant>> getByIds(List<int> ids) {
+    return database
+        .query(
+          LocalDatabase.plantTableName,
+          where: 'id IN (${ids.join(", ")})',
+        )
+        .then((result) => result.map((e) => Plant.fromJson(e)).toList());
+  }
+
   Future<List<Plant>> list() async {
     try {
       final result = await database.query(LocalDatabase.plantTableName,

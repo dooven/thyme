@@ -33,6 +33,7 @@ dependencies:
   json_serializable:
   image_picker:
   sliver_fab: ^1.0.0
+  collection: 1.14.12
   flutter_local_notifications: ^1.4.3
 
   # The following adds the Cupertino Icons font to your application.

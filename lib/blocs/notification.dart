@@ -3,8 +3,11 @@ import 'package:rxdart/rxdart.dart';
 
 class NotificationBloc {
   final _isReadyController = BehaviorSubject<bool>();
+  final _notificationMessage = BehaviorSubject<String>();
 
   Stream<bool> get isReadyStream => _isReadyController.stream;
+
+  Stream<String> get notificationMessageStream => _notificationMessage.stream;
 
   bool get isReady => _isReadyController.value;
 
@@ -12,6 +15,10 @@ class NotificationBloc {
 
   NotificationBloc() {
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  }
+
+  Future selectNotification(String payload) async {
+    _notificationMessage.add(payload);
   }
 
   Future<void> initializePlugin() {
@@ -26,7 +33,10 @@ class NotificationBloc {
         initializationSettingsAndroid, initializationSettingsIOS);
 
     return flutterLocalNotificationsPlugin
-        .initialize(initializationSettings)
+        .initialize(
+          initializationSettings,
+          onSelectNotification: selectNotification,
+        )
         .then(_isReadyController.add);
   }
 

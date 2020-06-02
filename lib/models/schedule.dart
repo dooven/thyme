@@ -26,7 +26,7 @@ class Schedule {
     toJson: byweekdayToJSON,
     fromJson: byweekdayFromJSON,
   )
-  List<int> byweekday;
+  Set<int> byweekday;
 
   @JsonKey(
     name: "created_at",
@@ -48,16 +48,17 @@ class Schedule {
 
   Map<String, dynamic> toJson() => _$ScheduleToJson(this);
 
-  static String byweekdayToJSON(List<int> value) {
+  static String byweekdayToJSON(Set<int> value) {
     if (value == null) return null;
 
-    return jsonEncode(value);
+    return jsonEncode(value.toList());
   }
 
-  static List<int> byweekdayFromJSON(String value) {
-    if (value == null) return [];
+  static Set<int> byweekdayFromJSON(String value) {
+    if (value == null) return {};
     final List<dynamic> test = jsonDecode(value);
-    return test.cast<int>();
+    List<int> intList = test.cast<int>();
+    return intList.toSet();
   }
 
   static int timeOfDayToJSON(TimeOfDay timeOfDay) {

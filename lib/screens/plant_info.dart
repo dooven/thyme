@@ -1,12 +1,15 @@
 import 'dart:io';
 
+import 'package:boopplant/blocs/global_refresh_bloc.dart';
 import 'package:boopplant/models/models.dart';
+import 'package:boopplant/repository/notification.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
 import 'package:boopplant/screens/home.dart';
 import 'package:boopplant/screens/plant_modify.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sliver_fab/sliver_fab.dart';
@@ -31,6 +34,7 @@ class PlantInfo extends StatefulWidget {
 
 class _PlantInfoState extends State<PlantInfo> {
   PlantInfoBloc _plantInfoBloc;
+  GlobalRefreshBloc _globalRefreshBloc;
   Stream<bool> _isScreenReady;
   Future initialScheduleFuture;
   ScrollController _controller = ScrollController();
@@ -47,11 +51,18 @@ class _PlantInfoState extends State<PlantInfo> {
     super.didChangeDependencies();
 
     final database = Provider.of<Database>(context, listen: false);
+    final notificationPlugin =
+        Provider.of<FlutterLocalNotificationsPlugin>(context, listen: false);
+
+    _globalRefreshBloc = Provider.of<GlobalRefreshBloc>(context, listen: false);
 
     final initialBloc = PlantInfoBloc(
-        plantId: widget.plantId,
-        plantRepository: PlantRepository(database: database),
-        scheduleRepository: ScheduleRepository(database: database));
+      plantId: widget.plantId,
+      plantRepository: PlantRepository(database: database),
+      scheduleRepository: ScheduleRepository(database: database),
+      notificationRepository: NotificationRepository(notificationPlugin),
+      globalRefreshSink: _globalRefreshBloc.refreshSink,
+    );
 
     if (initialBloc != _plantInfoBloc) {
       _plantInfoBloc = initialBloc;
@@ -70,7 +81,7 @@ class _PlantInfoState extends State<PlantInfo> {
 
   void editPlant(Plant plant) {
     Navigator.of(context)
-        .pushNamed(TabNavigatorRoutes.plantModify,
+        .pushNamed(HomeRoutes.plantModify,
             arguments: PlantModifyScreenArgument(plantId: plant.id))
         .then((value) {
       if (value) {
@@ -121,12 +132,13 @@ class _PlantInfoState extends State<PlantInfo> {
     setState(() {
       initialScheduleFuture = _plantInfoBloc.scheduleRepository
           .insert(Schedule(
-              byweekday: [],
+              byweekday: {},
               name: 'New Schedule',
               timeOfDay: TimeOfDay.now(),
               createdAt: DateTime.now(),
               plantId: widget.plantId))
           .then((_) => _plantInfoBloc.getSchedulesByPlantId())
+          .then((value) => _globalRefreshBloc.refreshSink(true))
           .then(
             (value) => _controller.animateTo(
               _controller.position.maxScrollExtent,
@@ -208,7 +220,11 @@ class _PlantInfoState extends State<PlantInfo> {
               ),
               ScheduleList(
                 schedule: _plantInfoBloc.schedule,
-                updateSchedule: _plantInfoBloc.updateSchedule,
+                updateTime: _plantInfoBloc.updateTime,
+                updateByweekday: _plantInfoBloc.updateByWeekday,
+                updateName: (name, scheduleId) {
+                  return _plantInfoBloc.updateSchedule(scheduleId, name: name);
+                },
               ),
             ],
           );
@@ -221,12 +237,20 @@ class _PlantInfoState extends State<PlantInfo> {
 class PlantInfoBloc {
   final PlantRepository plantRepository;
   final ScheduleRepository scheduleRepository;
+  final NotificationRepository notificationRepository;
+  final Function(bool) globalRefreshSink;
   final int plantId;
 
   final _plantController = BehaviorSubject<Plant>();
   final _scheduleController = BehaviorSubject<List<Schedule>>();
 
-  PlantInfoBloc({this.plantRepository, this.scheduleRepository, this.plantId});
+  PlantInfoBloc({
+    this.plantRepository,
+    this.scheduleRepository,
+    this.plantId,
+    this.notificationRepository,
+    this.globalRefreshSink,
+  });
 
   Stream<Plant> get plantStream => _plantController.stream;
 
@@ -260,14 +284,51 @@ class PlantInfoBloc {
             ));
   }
 
+  Future<void> updateTime(TimeOfDay timeOfDay, Schedule schedule) async {
+    Future.wait(schedule.byweekday
+        .map((weekdayIdx) => (schedule.id * 10) + weekdayIdx)
+        .map(notificationRepository.cancel)
+        .toList());
+
+    Future.wait(schedule.byweekday
+        .map((weekdayIdx) => notificationRepository.showWeeklyAtDayAndTime(
+            (schedule.id * 10) + weekdayIdx,
+            "Water your plants!",
+            "Water ${plant.name}",
+            Day.values[weekdayIdx],
+            Time(timeOfDay.hour, timeOfDay.minute)))
+        .toList());
+
+    return updateSchedule(schedule.id, timeOfDay: timeOfDay);
+  }
+
+  Future<void> updateByWeekday(int weekdayIdx, Schedule schedule) {
+    final newByweekday = schedule.byweekday;
+    if (schedule.byweekday.contains(weekdayIdx)) {
+      newByweekday.remove(weekdayIdx);
+      notificationRepository.cancel(weekdayIdx);
+    } else {
+      newByweekday.add(weekdayIdx);
+      notificationRepository.showWeeklyAtDayAndTime(
+          (schedule.id * 10) + weekdayIdx,
+          "Water your plants!",
+          "Water ${plant.name}",
+          Day.values[weekdayIdx],
+          Time(schedule.timeOfDay.hour, schedule.timeOfDay.minute));
+    }
+
+    return updateSchedule(schedule.id, byweekday: newByweekday);
+  }
+
   Future<void> updateSchedule(int scheduleId,
-      {List<int> byweekday, String name, TimeOfDay timeOfDay}) {
+      {Set<int> byweekday, String name, TimeOfDay timeOfDay}) {
     return scheduleRepository
         .update(scheduleId,
             byweekday: byweekday, name: name, timeOfDay: timeOfDay)
         .then((_) => scheduleRepository.getById(scheduleId))
         .then((value) => _scheduleController
-            .add(schedule.map((e) => e.id == value.id ? value : e).toList()));
+            .add(schedule.map((e) => e.id == value.id ? value : e).toList()))
+        .then((value) => globalRefreshSink(true));
   }
 
   void dispose() {

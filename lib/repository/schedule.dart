@@ -4,6 +4,13 @@ import 'package:boopplant/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
+typedef Future UpdateScheduleFn(
+  int id, {
+  TimeOfDay timeOfDay,
+  Set<int> byweekday,
+  String name,
+});
+
 class ScheduleRepository {
   final Database database;
 
@@ -39,12 +46,12 @@ class ScheduleRepository {
   Future<int> update(
     int id, {
     TimeOfDay timeOfDay,
-    List<int> byweekday,
+    Set<int> byweekday,
     String name,
   }) {
     final updateValues = {
       if (timeOfDay != null) 'time_of_day': timeOfDayToMilli(timeOfDay),
-      if (byweekday != null) 'byweekday': Plant.byweekdayToJSON(byweekday),
+      if (byweekday != null) 'byweekday': Schedule.byweekdayToJSON(byweekday),
       if (name != null) 'name': name,
     };
 
@@ -53,5 +60,12 @@ class ScheduleRepository {
       updateValues,
       where: 'id = $id',
     );
+  }
+
+  Future<List<Schedule>> getByDay(int weekdayIdx) {
+    return database.query(LocalDatabase.scheduleTableName).then((value) => value
+        .map((e) => Schedule.fromJson(e))
+        .where((element) => element.byweekday.contains(weekdayIdx))
+        .toList());
   }
 }
