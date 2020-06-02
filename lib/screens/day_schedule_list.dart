@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
@@ -12,6 +14,7 @@ import 'package:rxdart/rxdart.dart';
 class DayScheduleList extends StatelessWidget {
   List<Widget> buildList(BuildContext context,
       Map<int, List<Schedule>> scheduleMap, Map<int, Plant> plantMap) {
+    print("Plant Map empty: ${plantMap.isEmpty}");
     if (plantMap.isEmpty) {
       return [];
     }
@@ -137,7 +140,9 @@ class DayScheduleListBloc {
       (ids) => this._plantRepository.getByIds(ids).then(_plantsController.add));
 
   Stream<bool> get isReady =>
-      CombineLatestStream([scheduleListFetcher, plantListFetcher], (_) => true);
+      CombineLatestStream([scheduleListFetcher, plantListFetcher], (_) => true)
+          .transform(StreamTransformer.fromHandlers(
+              handleData: (data, sink) => sink..add(null)..add(data)));
 
   DayScheduleListBloc(this._scheduleRepository, this._plantRepository);
 
