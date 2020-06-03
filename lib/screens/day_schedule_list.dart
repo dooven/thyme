@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
@@ -12,12 +14,16 @@ import 'package:rxdart/rxdart.dart';
 class DayScheduleList extends StatelessWidget {
   List<Widget> buildList(BuildContext context,
       Map<int, List<Schedule>> scheduleMap, Map<int, Plant> plantMap) {
+    print("Plant Map empty: ${plantMap.isEmpty}");
     if (plantMap.isEmpty) {
       return [];
     }
     final sortedKey = scheduleMap.keys.toList()..sort();
 
     return sortedKey.expand((element) {
+      final schedules = scheduleMap[element]
+        ..sort(
+            (a, b) => a.timeOfDay.toString().compareTo(b.timeOfDay.toString()));
       return [
         ListTile(
           title: Text(
@@ -25,7 +31,7 @@ class DayScheduleList extends StatelessWidget {
             style: Theme.of(context).textTheme.headline6,
           ),
         ),
-        ...scheduleMap[element].map((schedule) {
+        ...schedules.map((schedule) {
           final plantItem = plantMap[schedule.plantId];
           final timeOfDay = schedule.timeOfDay;
 
@@ -52,8 +58,9 @@ class DayScheduleList extends StatelessWidget {
     return StreamBuilder(
       stream: dayScheduleBloc.isReady,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            !snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
         }
 
         final listWidgets = buildList(
@@ -62,7 +69,7 @@ class DayScheduleList extends StatelessWidget {
         return Column(
           children: [
             Container(
-              margin: EdgeInsets.all(8),
+              margin: EdgeInsets.only(top: 4, left: 8, right: 8),
               padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
@@ -77,10 +84,7 @@ class DayScheduleList extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text("Today's Schedule",
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6
-                          .copyWith(color: Colors.black54))
+                      style: Theme.of(context).textTheme.headline6)
                 ],
               ),
             ),
@@ -99,28 +103,27 @@ class DayScheduleList extends StatelessWidget {
 }
 
 class DayScheduleListBloc {
-  final _scheduleController = BehaviorSubject<List<Schedule>>.seeded([]);
-  final _plantsController = BehaviorSubject<List<Plant>>.seeded([]);
-  final _fetchController = BehaviorSubject<bool>.seeded(true);
+  final _scheduleController = BehaviorSubject<List<Schedule>>();
+  final _plantsController = BehaviorSubject<List<Plant>>();
 
   Stream<bool> globalRefreshStream;
 
   final ScheduleRepository _scheduleRepository;
   final PlantRepository _plantRepository;
 
-  Sink<bool> get fetchControllerSink => _fetchController.sink;
-  Stream<bool> get fetchStream => _fetchController.stream;
   Stream<List<Schedule>> get scheduleStream => _scheduleController.stream;
-  Stream<bool> get fetchStreamWithGlobal => Rx.combineLatest2(
-        fetchStream,
-        globalRefreshStream,
-        (_, __) => true,
-      ).startWith(true);
+  Stream<bool> get fetchStreamWithGlobal => globalRefreshStream.startWith(true);
   Stream<void> get scheduleListFetcher =>
-      fetchStreamWithGlobal.asyncMap((event) => this
-          ._scheduleRepository
-          .getByDay(DateTime.now().weekday % 7)
-          .then(_scheduleController.add));
+      fetchStreamWithGlobal.asyncMap((_) => this
+              ._scheduleRepository
+              .getByDay(DateTime.now().weekday % 7)
+              .then((schedules) {
+            _scheduleController.add(schedules);
+            return this
+                ._plantRepository
+                .getByIds(schedules.map((s) => s.plantId).toList())
+                .then(_plantsController.add);
+          }));
 
   Map<int, List<Schedule>> get scheduleByTime => groupBy(
         _scheduleController.value,
@@ -129,21 +132,12 @@ class DayScheduleListBloc {
   Map<int, Plant> get plantById =>
       {for (final v in _plantsController.value) v.id: v};
 
-  Stream<void> get plantListFetcher => Rx.combineLatest2(
-      fetchStreamWithGlobal,
-      scheduleStream,
-      (_, List<Schedule> schedules) =>
-          schedules.map((s) => s.plantId).toList()).asyncMap(
-      (ids) => this._plantRepository.getByIds(ids).then(_plantsController.add));
-
-  Stream<bool> get isReady =>
-      CombineLatestStream([scheduleListFetcher, plantListFetcher], (_) => true);
+  Stream<bool> get isReady => scheduleListFetcher.mapTo(true).startWith(null);
 
   DayScheduleListBloc(this._scheduleRepository, this._plantRepository);
 
   void dispose() {
     _scheduleController.close();
-    _fetchController.close();
     _plantsController.close();
   }
 }

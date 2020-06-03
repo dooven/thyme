@@ -42,17 +42,17 @@ class _HomeTabState extends State<HomeTab> {
         ),
         bottomNavigationBar: TabBar(
           indicatorSize: TabBarIndicatorSize.label,
-          indicatorPadding: EdgeInsets.all(5.0),
+          indicatorPadding: EdgeInsets.all(0.0),
+          indicatorWeight: 4.0,
+          // indicatorPadding: EdgeInsets.all(5.0),
           indicatorColor: Theme.of(context).primaryColor,
           onTap: _onItemTapped,
           tabs: [
             Tab(
               icon: Icon(Icons.schedule),
-              text: 'Today',
             ),
             Tab(
               icon: Icon(Icons.list),
-              text: 'Plants',
             ),
           ],
           // selectedItemColor: Theme.of(context).primaryColorDark,
