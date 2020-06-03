@@ -9,6 +9,9 @@ Manage your plants with Thyme. Create plant profiles that allow you to keep trac
 - Pruning
 - and more!
 
+:warning::warning::warning: This project is still under development :warning::warning::warning:
+
+
 ## Features
 - Reminders using [flutter_local_notification](https://pub.dev/packages/flutter_local_notifications)
 - Uses [sqflite](https://pub.dev/packages/sqflite) to store data
