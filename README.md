@@ -16,10 +16,6 @@ Manage your plants with Thyme. Create plant profiles that allow you to keep trac
 
 ## Screenshots
 
-### Adding A Plant
-
+![Schedule](./docs/readme-3.png)
 ![Adding A Plant](./docs/readme-1.png)
-
-### Schedule
-
 ![Schedule](./docs/readme-2.png)
