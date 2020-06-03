@@ -42,6 +42,8 @@ class _HomeTabState extends State<HomeTab> {
         ),
         bottomNavigationBar: TabBar(
           indicatorSize: TabBarIndicatorSize.label,
+          indicatorPadding: EdgeInsets.all(0.0),
+          indicatorWeight: 4.0,
           // indicatorPadding: EdgeInsets.all(5.0),
           indicatorColor: Theme.of(context).primaryColor,
           onTap: _onItemTapped,
