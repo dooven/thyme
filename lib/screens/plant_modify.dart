@@ -25,7 +25,6 @@ class PlantModify extends StatefulWidget {
 
 class _PlantModifyState extends State<PlantModify> {
   PlantAddBloc _plantAddBloc;
-  PlantListBloc _plantListBloc;
 
   final _plantNameController = new TextEditingController();
 
@@ -41,8 +40,6 @@ class _PlantModifyState extends State<PlantModify> {
         database: Provider.of<Database>(context),
       ),
     );
-
-    _plantListBloc = Provider.of<PlantListBloc>(context);
   }
 
   @override

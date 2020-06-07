@@ -12,7 +12,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:sliver_fab/sliver_fab.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'plant_schedule_list.dart';

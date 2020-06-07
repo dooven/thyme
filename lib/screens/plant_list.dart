@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:boopplant/models/models.dart';
 import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/screens/plant_info.dart';

@@ -1,6 +1,5 @@
 import 'package:boopplant/blocs/bloc.dart';
 import 'package:boopplant/screens/startupcontroller.dart';
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -19,10 +18,6 @@ class MyApp extends StatelessWidget {
         ),
         ProxyProvider<DatabaseBloc, Database>(
           update: (context, bloc, _) => bloc.database,
-        ),
-        FutureProvider<CameraDescription>(
-          create: (_) => availableCameras()
-              .then((value) => value.isEmpty ? null : value.first),
         ),
         Provider<NotificationBloc>(
           create: (_) => NotificationBloc()..initializePlugin(),

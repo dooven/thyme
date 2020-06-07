@@ -6,7 +6,6 @@ import 'package:boopplant/repository/plant.dart';
 import 'package:boopplant/repository/schedule.dart';
 import 'package:boopplant/screens/day_schedule_list.dart';
 import 'package:boopplant/screens/home_tab.dart';
-import 'package:boopplant/screens/plant_schedule_list.dart';
 import 'package:boopplant/screens/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
