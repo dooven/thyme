@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
 int timeOfDayToMilli(TimeOfDay timeOfDay) {
-  return DateTime.fromMillisecondsSinceEpoch(0)
-      .add(Duration(
-          hours: DateTime.now().timeZoneOffset.inHours + timeOfDay.hour,
-          minutes: timeOfDay.minute))
+  return DateTime(2020)
+      .add(Duration(hours: timeOfDay.hour, minutes: timeOfDay.minute))
       .millisecondsSinceEpoch;
 }
 
@@ -17,5 +15,6 @@ DateTime milliToDateTime(int milli) {
 }
 
 TimeOfDay milliToTimeOfDay(int milli) {
-  return TimeOfDay.fromDateTime(milliToDateTime(milli));
+  final dt = milliToDateTime(milli);
+  return TimeOfDay(hour: dt.hour, minute: dt.minute);
 }
