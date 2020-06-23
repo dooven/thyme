@@ -70,6 +70,6 @@ class ScheduleRepository {
   }
 
   Future<void> delete(int id) {
-    return database.delete(LocalDatabase.scheduleTableName, where: '$id = $id');
+    return database.delete(LocalDatabase.scheduleTableName, where: 'id = $id');
   }
 }
