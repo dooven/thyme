@@ -10,6 +10,7 @@ class ScheduleCard extends StatelessWidget {
   final Function(int weekday) saveByWeekDayCallback;
   final Function() onTapScheduleNameEdit;
   final Function() onTapScheduleTimeEdit;
+  final Function() onTapScheduleDelete;
 
   const ScheduleCard({
     Key key,
@@ -17,6 +18,7 @@ class ScheduleCard extends StatelessWidget {
     @required this.saveByWeekDayCallback,
     @required this.onTapScheduleNameEdit,
     @required this.onTapScheduleTimeEdit,
+    @required this.onTapScheduleDelete,
   }) : super(key: key);
 
   Widget dayList() {
@@ -96,7 +98,7 @@ class ScheduleCard extends StatelessWidget {
                       Expanded(
                         flex: 1,
                         child: ButtonRow(
-                          onTap: onTapScheduleNameEdit,
+                          onTap: onTapScheduleDelete,
                           icon: Icon(
                             Icons.remove_circle,
                             color: Theme.of(context).accentColor,

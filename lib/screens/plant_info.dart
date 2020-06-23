@@ -221,6 +221,7 @@ class _PlantInfoState extends State<PlantInfo> {
                 schedule: _plantInfoBloc.schedule,
                 updateTime: _plantInfoBloc.updateTime,
                 updateByweekday: _plantInfoBloc.updateByWeekday,
+                deleteSchedule: _plantInfoBloc.deleteSchedule,
                 updateName: (name, scheduleId) {
                   return _plantInfoBloc.updateSchedule(scheduleId, name: name);
                 },
@@ -328,6 +329,13 @@ class PlantInfoBloc {
         .then((value) => _scheduleController
             .add(schedule.map((e) => e.id == value.id ? value : e).toList()))
         .then((value) => globalRefreshSink(true));
+  }
+
+  Future<void> deleteSchedule(int scheduleId) {
+    return scheduleRepository.delete(scheduleId).then((_) {
+      _scheduleController
+          .add(schedule.where((element) => element.id != scheduleId).toList());
+    });
   }
 
   void dispose() {

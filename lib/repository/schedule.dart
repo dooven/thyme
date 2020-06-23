@@ -68,4 +68,8 @@ class ScheduleRepository {
         .where((element) => element.byweekday.contains(weekdayIdx))
         .toList());
   }
+
+  Future<void> delete(int id) {
+    return database.delete(LocalDatabase.scheduleTableName, where: '$id = $id');
+  }
 }

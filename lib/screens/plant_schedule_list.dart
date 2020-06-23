@@ -9,17 +9,20 @@ class ScheduleList extends StatefulWidget {
       @required List<Schedule> schedule,
       @required Function(TimeOfDay timeOfDay, Schedule schedule) updateTime,
       @required Function(int weekdayIdx, Schedule schedule) updateByweekday,
-      @required Function(String name, int scheduleId) updateName})
+      @required Function(String name, int scheduleId) updateName,
+      @required Function(int scheduleId) deleteSchedule})
       : _schedule = schedule,
         _updateTime = updateTime,
         _updateByweekday = updateByweekday,
         _updateName = updateName,
+        _deleteSchedule = deleteSchedule,
         super(key: key);
 
   final List<Schedule> _schedule;
   final Function(TimeOfDay timeOfDay, Schedule schedule) _updateTime;
   final Function(int weekdayIdx, Schedule schedule) _updateByweekday;
   final Function(String name, int scheduleId) _updateName;
+  final Function(int scheduleId) _deleteSchedule;
 
   @override
   _ScheduleListState createState() => _ScheduleListState();
@@ -48,6 +51,32 @@ class _ScheduleListState extends State<ScheduleList> {
                       }
                     : null,
                 child: const Text('Save'),
+              ),
+              OutlineButton(
+                onPressed: Navigator.of(context).pop,
+                child: const Text('Cancel'),
+              ),
+            ],
+          );
+        });
+  }
+
+  Future<void> _deleteSchedulePrompt(Schedule schedule) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text("Are you sure you want to delete this schedule?"),
+            actions: <Widget>[
+              RaisedButton(
+                onPressed: () {
+                  setState(() {
+                    individualScheduleFuture[schedule.id] =
+                        widget._deleteSchedule(schedule.id);
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Delete'),
               ),
               OutlineButton(
                 onPressed: Navigator.of(context).pop,
@@ -95,6 +124,7 @@ class _ScheduleListState extends State<ScheduleList> {
                             widget._updateByweekday(weekdayIdx, schedule);
                       });
                     },
+                    onTapScheduleDelete: () => _deleteSchedulePrompt(schedule),
                   );
                 });
           },
