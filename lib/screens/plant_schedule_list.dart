@@ -10,7 +10,7 @@ class ScheduleList extends StatefulWidget {
       @required Function(TimeOfDay timeOfDay, Schedule schedule) updateTime,
       @required Function(int weekdayIdx, Schedule schedule) updateByweekday,
       @required Function(String name, int scheduleId) updateName,
-      @required Function(int scheduleId) deleteSchedule})
+      @required Function(Schedule schedule) deleteSchedule})
       : _schedule = schedule,
         _updateTime = updateTime,
         _updateByweekday = updateByweekday,
@@ -22,7 +22,7 @@ class ScheduleList extends StatefulWidget {
   final Function(TimeOfDay timeOfDay, Schedule schedule) _updateTime;
   final Function(int weekdayIdx, Schedule schedule) _updateByweekday;
   final Function(String name, int scheduleId) _updateName;
-  final Function(int scheduleId) _deleteSchedule;
+  final Function(Schedule schedule) _deleteSchedule;
 
   @override
   _ScheduleListState createState() => _ScheduleListState();
@@ -72,7 +72,7 @@ class _ScheduleListState extends State<ScheduleList> {
                 onPressed: () {
                   setState(() {
                     individualScheduleFuture[schedule.id] =
-                        widget._deleteSchedule(schedule.id);
+                        widget._deleteSchedule(schedule);
                   });
                   Navigator.of(context).pop();
                 },
