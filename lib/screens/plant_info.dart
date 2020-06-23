@@ -331,10 +331,16 @@ class PlantInfoBloc {
         .then((value) => globalRefreshSink(true));
   }
 
-  Future<void> deleteSchedule(int scheduleId) {
-    return scheduleRepository.delete(scheduleId).then((_) {
-      _scheduleController
-          .add(schedule.where((element) => element.id != scheduleId).toList());
+  Future<void> deleteSchedule(Schedule scheduleToDelete) {
+    Future.wait(scheduleToDelete.byweekday
+        .map((weekdayIdx) => (scheduleToDelete.id * 10) + weekdayIdx)
+        .map(notificationRepository.cancel)
+        .toList());
+
+    return scheduleRepository.delete(scheduleToDelete.id).then((_) {
+      _scheduleController.add(schedule
+          .where((element) => element.id != scheduleToDelete.id)
+          .toList());
     });
   }
 
