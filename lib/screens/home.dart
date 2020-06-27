@@ -43,8 +43,7 @@ class _HomeState extends State<Home> {
       notificationSub =
           notificationBloc.notificationMessageStream.listen((event) {
         WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-          widget.navigatorKey.currentState.pushNamed('/plant/info',
-              arguments: PlantInfoScreenArguments(id: 1));
+          widget.navigatorKey.currentState.pushNamed(HomeRoutes.scheduleList);
         });
       });
     }

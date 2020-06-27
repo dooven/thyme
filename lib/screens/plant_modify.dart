@@ -51,6 +51,13 @@ class _PlantModifyState extends State<PlantModify> {
       },
       child: Scaffold(
         appBar: AppBar(
+          iconTheme: Theme.of(context).iconTheme.copyWith(color: Colors.white),
+          textTheme: TextTheme(
+            headline6: Theme.of(context)
+                .textTheme
+                .headline6
+                .copyWith(color: Colors.white),
+          ),
           leading: CloseButton(),
           title: Text('${_plantAddBloc.isEditing ? 'Update' : 'Add'} plant'),
         ),
