@@ -14,7 +14,6 @@ import 'package:rxdart/rxdart.dart';
 class DayScheduleList extends StatelessWidget {
   List<Widget> buildList(BuildContext context,
       Map<int, List<Schedule>> scheduleMap, Map<int, Plant> plantMap) {
-    print("Plant Map empty: ${plantMap.isEmpty}");
     if (plantMap.isEmpty) {
       return [];
     }
@@ -83,8 +82,13 @@ class DayScheduleList extends StatelessWidget {
                 direction: Axis.horizontal,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text("Today's Schedule",
-                      style: Theme.of(context).textTheme.headline6)
+                  Text(
+                    "Today's Schedule",
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline6
+                        .copyWith(color: Colors.white),
+                  )
                 ],
               ),
             ),

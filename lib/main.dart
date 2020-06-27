@@ -26,18 +26,21 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-            primaryColor: Colors.lightGreen[300],
-            primarySwatch: Colors.lightGreen,
-            accentColor: Colors.orangeAccent[200],
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            buttonTheme: ButtonThemeData(
-              buttonColor: Colors.orangeAccent[200],
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+          primaryColor: Colors.lightGreen[300],
+          primarySwatch: Colors.lightGreen,
+          accentColor: Colors.orangeAccent[200],
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          buttonTheme: ButtonThemeData(
+            buttonColor: Colors.orangeAccent[200],
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            inputDecorationTheme: InputDecorationTheme(
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16)))),
+          ),
+        ),
         builder: (context, child) {
           return SafeArea(
             child: child,

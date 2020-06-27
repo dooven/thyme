@@ -12,12 +12,6 @@ class PlantCircleAvatar extends StatelessWidget {
     final hasImageURL = imageUrl != null;
 
     return CircleAvatar(
-      child: hasImageURL
-          ? Text(
-              imageUrl.substring(0, 1),
-              style: TextStyle(color: Colors.white),
-            )
-          : null,
       backgroundColor: Theme.of(context).backgroundColor,
       backgroundImage: hasImageURL ? FileImage(File(imageUrl)) : null,
     );

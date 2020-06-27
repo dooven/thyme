@@ -52,7 +52,7 @@ class _PlantModifyState extends State<PlantModify> {
       child: Scaffold(
         appBar: AppBar(
           leading: CloseButton(),
-          title: Text('Add a plant'),
+          title: Text('${_plantAddBloc.isEditing ? 'Update' : 'Add'} plant'),
         ),
         body: Container(
           margin: EdgeInsets.all(16.0),
